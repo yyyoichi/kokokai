@@ -1,4 +1,4 @@
-import setting.setting as setting
+import src.setting.setting as setting
 
 
 def main():
