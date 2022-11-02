@@ -1,7 +1,7 @@
 from urllib import request
 import urllib.parse
 
-from minute.speech import Recode
+from src.minute.speech import Recode
 
 
 class Url:
