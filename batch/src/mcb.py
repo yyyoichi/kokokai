@@ -9,7 +9,7 @@ def getMecab():
     return Parser(MeCab.Tagger(dict))
 
 
-class Word:
+class Morpheme:
     def __init__(self, line: str) -> None:
         l = line.split("\t")
         self.s = l[0]
@@ -88,13 +88,13 @@ class Parser:
         for line in lines:
             if line == "EOS":
                 break
-            yield Word(line)
+            yield Morpheme(line)
 
 
 if __name__ == "__main__":
     m = getMecab()
-    words = m.parse("山本洋一郎と申します。")
-    w = next(words, None)
-    while (w):
-        print(w.prototype())
-        w = next(words, None)
+    sentence = m.parse("山本洋一郎と申します。")
+    morpheme = next(sentence, None)
+    while (morpheme):
+        print(morpheme.prototype())
+        morpheme = next(sentence, None)

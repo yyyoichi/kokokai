@@ -1,11 +1,11 @@
 from src.sentence import daySpeech
-from mcb import getMecab, Word
+from mcb import getMecab, Morpheme
 
 
 class Validation:
     stop_words = [""]
 
-    def __init__(self, word: Word) -> None:
+    def __init__(self, word: Morpheme) -> None:
         self.w = word
 
     def is_stop_word(self):
