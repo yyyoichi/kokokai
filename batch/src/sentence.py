@@ -14,8 +14,8 @@ def daySpeech(date: str):
         block = recode.iterator()
         while (block.has_next()):
             spc = block.next().speech()
-            sentenses = spc.getSentences()
-            for s in sentenses:
+            sentences = spc.getSentences()
+            for s in sentences:
                 yield s
         if (recode.nextRecordPosition() == None):
             break

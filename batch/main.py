@@ -1,4 +1,4 @@
-from src.main import daySpeech
+from src.sentence import daySpeech
 from mcb import getMecab, Word
 
 
