@@ -1,5 +1,5 @@
 from src.main import daySpeech
-from src.word import getMecab, Word
+from mcb import getMecab, Word
 
 
 class Validation:
