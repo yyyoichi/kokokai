@@ -35,21 +35,21 @@ class Recode:
     def __init__(self, response) -> None:
         self.response = response
 
-    def numberOfRecords(self) -> str:
+    def numberOfRecords(self) -> int:
         """
         Returns:
             str: 総結果件数
         """
         return self.response["numberOfRecords"]
 
-    def numberOfReturn(self) -> str:
+    def numberOfReturn(self) -> int:
         """
         Returns:
             str: 返戻件数
         """
         return self.response["numberOfReturn"]
 
-    def nextRecordPosition(self) -> str:
+    def nextRecordPosition(self) -> int:
         """
         Returns:
             str: 次開始位置
