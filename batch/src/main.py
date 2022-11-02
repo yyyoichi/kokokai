@@ -9,12 +9,5 @@ def getMecab():
     return MeCab.Tagger(dict)
 
 
-m = getMecab()
-
-
-def parse(str: str):
-    return m.parse(str)
-
-
 if __name__ == "__main__":
-    print(parse("約束のネバーランドが面白い"))
+    print(getMecab().parse("約束のネバーランドが面白い"))
