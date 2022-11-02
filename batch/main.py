@@ -28,16 +28,16 @@ with open('stop_words.txt', 'r', encoding="utf-8") as f:
 def main():
     m = getMecab()
     date = "2022-10-27"
-    it = daySpeech(date)
-    s = next(it, None)
-    while (s):
-        p = m.parse(s)
-        w = next(p, None)
-        while (w):
-            w.surface()
+    speech = daySpeech(date)
+    sentence = next(speech, None)
+    while (sentence):
+        p = m.parse(sentence)
+        morpheme = next(p, None)
+        while (morpheme):
+            morpheme.surface()
             # print(w.surface() + " - " + w.part_of_speech())
-            w = next(p, None)
-        s = next(it, None)
+            morpheme = next(p, None)
+        sentence = next(speech, None)
 
 
 if __name__ == "__main__":
