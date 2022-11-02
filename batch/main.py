@@ -1,17 +1,20 @@
 from src.main import daySpeech
-import src.setting as setting
-import src.db as db
+from src.word import getMecab
 
 
 def main():
-    date = "2022-03-01"
+    m = getMecab()
+    date = "2022-10-27"
     it = daySpeech(date)
-    last = "1"
     s = next(it, None)
     while (s):
-        last = s
+        p = m.parse(s)
+        w = next(p, None)
+        while (w):
+            w.surface()
+            print(w.surface() + " - " + w.part_of_speech())
+            w = next(p, None)
         s = next(it, None)
-    print(last)
 
 
 if __name__ == "__main__":
