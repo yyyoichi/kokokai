@@ -90,7 +90,7 @@ class RecodeIterator:
     def next(self):
         sr = self.Recode.speechRecordAt(self.index)
         self.index += 1
-        return
+        return sr
 
 
 class SpeechRecode:
