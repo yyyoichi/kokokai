@@ -1,8 +1,8 @@
 import re
 import MeCab
 from os.path import join, dirname
-import minute.main as minute
-import setting.setting as setting
+import src.minute.main as minute
+import src.setting as setting
 
 
 def getMecab():
