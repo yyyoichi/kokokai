@@ -3,8 +3,6 @@ import src.setting as setting
 
 
 class DB:
-    Cursor = psycopg2.cursor
-
     def __init__(self) -> None:
         self._connect()
         print("Connect db")
@@ -27,6 +25,9 @@ class DB:
         callback(cur)
         cur.close()
         self.close()
+
+    def get_db(self):
+        return self.db
 
     def test(self):
         cur = self.db.cursor()
