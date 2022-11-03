@@ -26,6 +26,7 @@ class DB:
         cur = self.db.cursor()
         callback(cur)
         cur.close()
+        self.close()
 
     def test(self):
         cur = self.db.cursor()
