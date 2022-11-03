@@ -26,8 +26,8 @@ class DB:
         cur.close()
         self.close()
 
-    def get_db(self):
-        return self.db
+    def get_db_cursor(self):
+        return self.db.cursor()
 
     def test(self):
         cur = self.db.cursor()
