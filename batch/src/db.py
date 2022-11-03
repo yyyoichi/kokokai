@@ -20,7 +20,7 @@ class DB:
             sslkey=setting.SSL_KEY
         )
 
-    def get_transaction(self, callback: function):
+    def get_transaction(self, callback):
         cur = self.db.cursor()
         callback(cur)
         cur.close()
