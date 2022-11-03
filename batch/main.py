@@ -1,4 +1,6 @@
+import collections
 import datetime
+import itertools
 from src.sentence import daySpeech
 from src.mcb import getMecab, Morpheme
 
@@ -59,13 +61,39 @@ def get_nouns_days_ago(ago: int):
     return noun_list
 
 
+def get_upper(pl: list, minfreq: int, max: int) -> list[tuple[tuple[str], int]]:
+    """
+    minfreq以上のペアリストを最大max件取得する
+    Args
+        pl フラットなペアリスト
+        minfreq 最低頻度
+        max 取得上限
+    """
+    dcnt = collections.Counter(pl)
+    pl = [(k, dcnt[k]) for k in dcnt.keys() if dcnt[k] >= minfreq]
+    print(len(pl))
+    return sorted(dcnt.items(), key=lambda x: x[1], reverse=True)[:max]
+
+
 def main():
     """
     その日の共起リストをDBに格納する
     """
+    # 文章ごとの名詞リスト
     noun_list = get_nouns_days_ago(10)
-    for n in noun_list:
-        print(n)
+    # 文章ごとのペアリスト
+    double_pair_list = [
+        list(itertools.combinations(nl, 2))
+        for nl in noun_list if len(nl) >= 2
+    ]
+    # フラットなペアリスト
+    pair_list = []
+    for p in double_pair_list:
+        pair_list.extend(p)
+
+    upper_list = get_upper(pair_list, 5, 100)
+    for ul in upper_list:
+        print(ul)
 
 
 if __name__ == "__main__":
