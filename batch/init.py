@@ -1,4 +1,16 @@
+import sys
 from src.db import get_connection
+
+
+def delete():
+    print("delete rows")
+    conn = get_connection()
+    cursor = conn.cursor()
+    with open("delete_row.sql", "r", encoding="utf-8") as f:
+        sql = f.read()
+        cursor.execute(sql)
+        conn.commit()
+    conn.close()
 
 
 def init():
@@ -12,4 +24,9 @@ def init():
 
 
 if __name__ == "__main__":
-    init()
+    arg = sys.argv[1]
+    print(arg)
+    if arg == "init":
+        init()
+    elif arg == "delete":
+        delete()
