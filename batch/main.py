@@ -35,21 +35,29 @@ def main():
         datetime.timedelta(hours=9))) - datetime.timedelta(days=10)
     speech = daySpeech(date.strftime("%Y-%m-%d"))
     sentence = next(speech, None)
-    # 名詞の単語リスト
+    # [[1文中の名詞リスト]]
     noun_list = []
 
-    def add_noun_list(mph: Morpheme):
+    def is_target(mph: Morpheme):
         v = Validation(mph)
         if v.is_noun() and not v.is_asterisk() and not v.is_int() and not v.is_stop_word():
-            noun_list.append(mph.prototype())
+            return True
+        else:
+            return False
 
     while (sentence):
         p = m.parse(sentence)
         morpheme = next(p, None)
+        sentence_noun_list = []
         while (morpheme):
-            add_noun_list(morpheme)
+            if is_target(morpheme):
+                sentence_noun_list.append(morpheme.prototype())
             morpheme = next(p, None)
+        noun_list.append(sentence_noun_list)
         sentence = next(speech, None)
+
+    for n in noun_list:
+        print(n)
 
 
 if __name__ == "__main__":
