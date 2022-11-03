@@ -108,7 +108,10 @@ def main():
         kyoki_day_pk = kyoki_day_pk[0]
 
     # kyokiday新規挿入
-    cursor.execute("insert into kyokiday(date) values(%s)", (date,))
+    cursor.execute(
+        "insert into kyokiday(pk, date) values(%s, %s)",
+        (kyoki_day_pk, date,)
+    )
     print("insert kyokiday! pk:", kyoki_day_pk, "date:", date)
 
     # 共起リストを1つずつ格納
@@ -119,7 +122,9 @@ def main():
             kyoki_pk = kyoki_pk[0]
         # kyoki 新規挿入
         cursor.execute(
-            "insert into kyoki(kyokiday, freq) values(%s, %s)", (kyoki_day_pk, pair[1]))
+            "insert into kyoki(pk, kyokiday, freq) values(%s, %s, %s)",
+            (kyoki_pk, kyoki_day_pk, pair[1])
+        )
         print("\tinsert kyoki! pk:", kyoki_pk, "freq:", pair[1])
         for word in pair[0]:
             word_pk = word_pk_dict.get(word, None)
@@ -140,7 +145,9 @@ def main():
                         word_pk = word_pk[0]
                         word_pk_dict[word] = word_pk
                     cursor.execute(
-                        "insert into word(word) values(%s)", (word,))
+                        "insert into word(code ,word) values(%s, %s)",
+                        (word_pk, word,)
+                    )
                     print("\t\t\tinsert word! pk:", word_pk)
 
             # ペア内容（kyokiitem）を挿入
@@ -153,6 +160,7 @@ def main():
     conn.commit()
     conn.close()
     print("end\n\n")
+
 
     # conn.commit()
 if __name__ == "__main__":
