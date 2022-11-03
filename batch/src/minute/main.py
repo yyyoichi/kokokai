@@ -1,4 +1,6 @@
+import json
 from urllib import request
+import http
 import urllib.parse
 
 from src.minute.speech import Recode
@@ -10,8 +12,6 @@ class Url:
     HTTPのGetメソッドで送信された検索リクエストに対し、XML形式又はJSON形式でデータを返戻します。
     次の3種類の検索APIがあります。検索リクエストの指定方法は同じですが、データの返戻形式が異なります。
     """
-
-    query = []
 
     def __init__(self, number: int) -> None:
         """(1) 会議単位簡易出力では、指定した検索条件でヒットした会議録の情報（回次、院、会議名、号、開催日、ID、URL等）を、1リクエストに対し最大100件まで、XML形式又はJSON形式で返戻します。
@@ -36,6 +36,7 @@ class Url:
             self.url = "https://kokkai.ndl.go.jp/api/speech?"
         else:
             print("number requre 1, 2, 3")
+        self.query = []
 
     def getUrl(self):
         return self.url + "&".join(self.query)
@@ -248,32 +249,13 @@ class Url:
         self.query.append(query)
 
 
-class Minute:
-    def __init__(self, number: int) -> None:
-        """(1) 会議単位簡易出力では、指定した検索条件でヒットした会議録の情報（回次、院、会議名、号、開催日、ID、URL等）を、1リクエストに対し最大100件まで、XML形式又はJSON形式で返戻します。
-        アクセスURLは https://kokkai.ndl.go.jp/api/meeting_list?{検索条件} です。
-        発言を対象に検索した場合には、会議録中の該当する発言の情報（発言者名、発言順、ID、URL）も合わせて返戻します。
-        本文のテキストデータは返戻しません。\n
-        (2) 会議単位出力では、指定した検索条件でヒットした会議録の情報（回次、院、会議名、号、開催日、ID、URL等）と、当該会議録の全ての発言本文のテキストデータ（発言者等の情報を含みます。）を、1リクエストに対し最大10件まで、XML形式又はJSON形式で返戻します。
-        アクセスURLは https://kokkai.ndl.go.jp/api/meeting?{検索条件} です。
-        本文のテキストデータが返戻される点で(1) 会議単位簡易出力と、会議録中の全ての発言が返戻される点で(3) 発言単位出力と異なります。\n
-        (3) 発言単位出力では、指定した検索条件でヒットした発言本文のテキストデータ（発言者の情報を含みます。）を、その発言が含まれる会議録の情報（回次、院、会議名、号、開催日、ID、URL等）と共に、1リクエストに対し最大100件まで、XML形式又はJSON形式で返戻します。
-        アクセスURLは https://kokkai.ndl.go.jp/api/speech?{検索条件} です。
-        本文のテキストデータが返戻される点で(1) 会議単位簡易出力と、ヒットした発言だけが返戻される点で(2) 会議単位出力と異なります。\n\n
-        検索結果のソート順は、会議開催日の新しい順となっています。
-        Args: 
-            number (int): リクエストタイプ
-        """
-        self.u = Url(number)
-        return None
-
-    def get(self) -> Recode:
-        url = self.u.getUrl()
-        res = request.get(url)
-        if res.status_code == 200:
+def getMinute(u: Url):
+    url = u.getUrl()
+    with request.urlopen(url) as res:
+        if res.getcode() == 200:
             print("requests success")
-            json = res.json()
-            return Recode(json)
+            json_data = json.loads(res.read())
+            return Recode(json_data)
         else:
             print("requests failuter")
             return None
