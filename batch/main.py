@@ -1,3 +1,4 @@
+import datetime
 from src.sentence import daySpeech
 from src.mcb import getMecab, Morpheme
 
@@ -30,8 +31,9 @@ def main():
     その日の共起リストをDBに格納する
     """
     m = getMecab()
-    date = "2022-10-27"
-    speech = daySpeech(date)
+    date = datetime.datetime.now(datetime.timezone(
+        datetime.timedelta(hours=9))) - datetime.timedelta(days=10)
+    speech = daySpeech(date.strftime("%Y-%m-%d"))
     sentence = next(speech, None)
     # 名詞の単語リスト
     noun_list = []
@@ -48,9 +50,6 @@ def main():
             add_noun_list(morpheme)
             morpheme = next(p, None)
         sentence = next(speech, None)
-
-    for w in noun_list:
-        print(w)
 
 
 if __name__ == "__main__":
