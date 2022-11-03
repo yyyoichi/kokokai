@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2 import cursor
 import src.setting as setting
 
 
@@ -19,6 +20,11 @@ class DB:
             sslcert=setting.SSL_CERT,
             sslkey=setting.SSL_KEY
         )
+
+    def get_transaction(self, callback):
+        cur = self.db.cursor()
+        callback(cur)
+        cur.close()
 
     def test(self):
         cur = self.db.cursor()
