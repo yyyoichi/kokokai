@@ -26,16 +26,16 @@ with open('stop_words.txt', 'r', encoding="utf-8") as f:
     Validation.stop_words = [w.strip() for w in f.readlines()]
 
 
-def main():
+def get_nouns_days_ago(ago: int):
     """
-    その日の共起リストをDBに格納する
+    ago 日前の議事録から文章ごとの名詞リストを取得する
     """
     m = getMecab()
     date = datetime.datetime.now(datetime.timezone(
-        datetime.timedelta(hours=9))) - datetime.timedelta(days=10)
+        datetime.timedelta(hours=9))) - datetime.timedelta(days=ago)
     speech = daySpeech(date.strftime("%Y-%m-%d"))
     sentence = next(speech, None)
-    # [[1文中の名詞リスト]]
+    # 文章ごとの名詞リスト
     noun_list = []
 
     def is_target(mph: Morpheme):
@@ -56,6 +56,14 @@ def main():
         noun_list.append(sentence_noun_list)
         sentence = next(speech, None)
 
+    return noun_list
+
+
+def main():
+    """
+    その日の共起リストをDBに格納する
+    """
+    noun_list = get_nouns_days_ago(10)
     for n in noun_list:
         print(n)
 
