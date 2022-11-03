@@ -1,1 +1,8 @@
 .venv
+.env
+__pycache__
+mecab-ipadic-neologd
+server-ca.pem
+client-cert.pem
+client-key.pem
+batch.log
