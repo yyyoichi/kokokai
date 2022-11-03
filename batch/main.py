@@ -28,14 +28,12 @@ with open('stop_words.txt', 'r', encoding="utf-8") as f:
     Validation.stop_words = [w.strip() for w in f.readlines()]
 
 
-def get_nouns_days_ago(ago: int):
+def get_nouns(date: str):
     """
     ago 日前の議事録から文章ごとの名詞リストを取得する
     """
     m = getMecab()
-    date = datetime.datetime.now(datetime.timezone(
-        datetime.timedelta(hours=9))) - datetime.timedelta(days=ago)
-    speech = daySpeech(date.strftime("%Y-%m-%d"))
+    speech = daySpeech(date)
     sentence = next(speech, None)
     # 文章ごとの名詞リスト
     noun_list = []
@@ -79,8 +77,11 @@ def main():
     """
     その日の共起リストをDBに格納する
     """
+    date = (datetime.datetime.now(datetime.timezone(
+        datetime.timedelta(hours=9))) - datetime.timedelta(days=10)).strftime("%Y-%m-%d")
+
     # 文章ごとの名詞リスト
-    noun_list = get_nouns_days_ago(10)
+    noun_list = get_nouns(date)
     # 文章ごとのペアリスト
     double_pair_list = [
         list(itertools.combinations(nl, 2))
