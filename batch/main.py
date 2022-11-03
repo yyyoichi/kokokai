@@ -3,6 +3,7 @@ import datetime
 import itertools
 from src.sentence import daySpeech
 from src.mcb import getMecab, Morpheme
+from src.db import get_connection
 
 
 class Validation:
@@ -69,11 +70,12 @@ def get_upper(pl: list, minfreq: int, max: int) -> list[tuple[tuple[str], int]]:
     """
     dcnt = collections.Counter(pl)
     pl = [(k, dcnt[k]) for k in dcnt.keys() if dcnt[k] >= minfreq]
-    print(len(pl))
     return sorted(dcnt.items(), key=lambda x: x[1], reverse=True)[:max]
 
 
 def main():
+    print(datetime.datetime.now(datetime.timezone(
+        datetime.timedelta(hours=9))))
     """
     その日の共起リストをDBに格納する
     """
@@ -93,9 +95,65 @@ def main():
         pair_list.extend(p)
 
     upper_list = get_upper(pair_list, 5, 100)
-    for ul in upper_list:
-        print(ul)
 
+    word_pk_dict = {}
 
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # kyokiday を新規
+    cursor.execute("select nextval('kyokiday_pk_seq')")
+    kyoki_day_pk = cursor.fetchone()
+    if kyoki_day_pk:
+        kyoki_day_pk = kyoki_day_pk[0]
+
+    # kyokiday新規挿入
+    cursor.execute("insert into kyokiday(date) values(%s)", (date,))
+    print("insert kyokiday! pk:", kyoki_day_pk, "date:", date)
+
+    # 共起リストを1つずつ格納
+    for pair in upper_list:
+        cursor.execute("select nextval('kyoki_pk_seq')")
+        kyoki_pk = cursor.fetchone()
+        if kyoki_pk:
+            kyoki_pk = kyoki_pk[0]
+        # kyoki 新規挿入
+        cursor.execute(
+            "insert into kyoki(kyokiday, freq) values(%s, %s)", (kyoki_day_pk, pair[1]))
+        print("\tinsert kyoki! pk:", kyoki_pk, "freq:", pair[1])
+        for word in pair[0]:
+            word_pk = word_pk_dict.get(word, None)
+            if not word_pk:
+                # DBから取得するか、新しくワードを挿入して主キーを取得する
+                # DBから主キーを取得
+                cursor.execute("select code from word where word=%s", (word,))
+                db_word_key = cursor.fetchone()
+                if db_word_key:
+                    word_pk = db_word_key[0]
+
+                # DBにワードがない
+                else:
+                    # 新規ワードを作成し、主キーを保持する
+                    cursor.execute("select nextval('word_code_seq')")
+                    word_pk = cursor.fetchone()
+                    if word_pk:
+                        word_pk = word_pk[0]
+                        word_pk_dict[word] = word_pk
+                    cursor.execute(
+                        "insert into word(word) values(%s)", (word,))
+                    print("\t\t\tinsert word! pk:", word_pk)
+
+            # ペア内容（kyokiitem）を挿入
+            cursor.execute(
+                "insert into kyokiitem(kyokiday, kyoki, word) values(%s, %s, %s)",
+                (kyoki_day_pk, kyoki_pk, word_pk)
+            )
+            print("\t\tinsert kyokiitem! word:", word)
+    cursor.close()
+    conn.commit()
+    conn.close()
+    print("end\n\n")
+
+    # conn.commit()
 if __name__ == "__main__":
     main()
