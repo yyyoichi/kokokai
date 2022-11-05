@@ -34,15 +34,10 @@ func getPsqlConn() string {
 	)
 	return psqlconn
 }
-func GetDatabase() *sql.DB {
-
+func GetDatabase() (*sql.DB, error) {
 	db, err := sql.Open("postgres", getPsqlConn())
-	CheckError(err)
-	return db
-}
-
-func CheckError(err error) {
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	return db, err
 }

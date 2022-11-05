@@ -19,20 +19,22 @@ func TestGetPsqlConn(t *testing.T) {
 	}
 }
 func TestDatabaseConnect(t *testing.T) {
-	db := GetDatabase()
-	defer db.Close()
-	if db == nil {
+	db, err := GetDatabase()
+	if err != nil {
 		t.Error("cannot connect database")
 	}
+	defer db.Close()
 }
 
 func TestGetDatabase(t *testing.T) {
-	db := GetDatabase()
+	db, err := GetDatabase()
+	if err != nil {
+		t.Errorf("cannot connect db.")
+	}
 	selectStmt := `select * from kyokiday limit 5`
-	rows, er := db.Query(selectStmt)
-	defer db.Close()
-	if er != nil {
-		t.Error("error")
+	rows, err := db.Query(selectStmt)
+	if err != nil {
+		panic(err)
 	}
 	for rows.Next() {
 		var pk int64
@@ -42,4 +44,5 @@ func TestGetDatabase(t *testing.T) {
 		}
 		t.Logf("pk:%d", pk)
 	}
+	defer db.Close()
 }
