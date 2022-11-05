@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -25,11 +26,11 @@ func getPsqlConn() string {
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASS")
 	dbname := os.Getenv("DB_NAME")
-	sslrootcert := filepath.Join(currentDir, os.Getenv("SSL_ROOT_CERT"))
-	sslkey := filepath.Join(currentDir, os.Getenv("SSL_CERT"))
-	sslcert := filepath.Join(currentDir, os.Getenv("SSL_KEY"))
+	sslrootcert := strings.ReplaceAll(filepath.Join(currentDir, os.Getenv("SSL_ROOT_CERT")), "\\", "/")
+	sslkey := strings.ReplaceAll(filepath.Join(currentDir, os.Getenv("SSL_KEY")), "\\", "/")
+	sslcert := strings.ReplaceAll(filepath.Join(currentDir, os.Getenv("SSL_CERT")), "\\", "/")
 	psqlconn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=verify-full sslrootcert=%s sslkey=%s sslcert=%s",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=verify-ca sslrootcert=%s sslkey=%s sslcert=%s",
 		host, port, user, password, dbname, sslrootcert, sslkey, sslcert,
 	)
 	return psqlconn
