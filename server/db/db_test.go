@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"strings"
 	"testing"
 )
@@ -23,10 +24,16 @@ func TestDatabaseConnect(t *testing.T) {
 	if err != nil {
 		t.Error("cannot connect database")
 	}
+	err = db.Ping()
+	if err != nil {
+		t.Error("failure")
+	} else {
+		t.Log("success")
+	}
 	defer db.Close()
 }
 
-func TestGetDatabase(t *testing.T) {
+func TestQueryDatabase(t *testing.T) {
 	db, err := GetDatabase()
 	if err != nil {
 		t.Errorf("cannot connect db.")
@@ -37,12 +44,16 @@ func TestGetDatabase(t *testing.T) {
 		panic(err)
 	}
 	for rows.Next() {
-		var pk int64
-		err := rows.Scan(&pk)
+		var pk sql.NullInt64
+		var date sql.NullTime
+		var createAt sql.NullTime
+		err := rows.Scan(&pk, &date, &createAt)
 		if err != nil {
 			t.Error("error scan")
 		}
-		t.Logf("pk:%d", pk)
+		t.Log(pk)
+		t.Log(date)
+		t.Log(createAt)
 	}
 	defer db.Close()
 }
