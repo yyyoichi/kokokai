@@ -7,7 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v4/stdlib"
+	"google.golang.org/appengine/v2"
 )
 
 func getPsqlConn() string {
@@ -27,7 +28,21 @@ func getPsqlConn() string {
 	return psqlconn
 }
 func GetDatabase() (*sql.DB, error) {
-	db, err := sql.Open("postgres", getPsqlConn())
+	var db *sql.DB
+	var err error
+	if appengine.IsAppEngine() {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASS")
+		dbname := os.Getenv("DB_NAME")
+		host := os.Getenv("DB_HOST")
+		conf := fmt.Sprintf(
+			"user=%s password=%s database=%s host=%s",
+			user, password, dbname, host,
+		)
+		db, err = sql.Open("pgx", conf)
+	} else {
+		db, err = sql.Open("postgres", getPsqlConn())
+	}
 	if err != nil {
 		return nil, err
 	}
