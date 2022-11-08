@@ -108,7 +108,7 @@ func TestDaykyoki(t *testing.T) {
 	if len(kyokiList) != 30 {
 		t.Errorf("kyokiList len=%d", len(kyokiList))
 	}
-	t.Logf("pk: %d, freq: %d", kyokiList[0].pk, kyokiList[0].freq)
+	t.Logf("pk: %d, freq: %d", kyokiList[0].Pk, kyokiList[0].Freq)
 }
 
 func TestKyokiItem(t *testing.T) {
