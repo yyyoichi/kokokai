@@ -1,0 +1,6 @@
+.gcloudignore
+*.sum
+*.pem
+app.yaml
+dev.yaml
+db/config/
