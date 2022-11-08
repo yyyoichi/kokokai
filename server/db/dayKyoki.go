@@ -5,26 +5,26 @@ import (
 )
 
 type Kyoki struct {
-	words []string `json: "words"`
-	pk    int64    `json: "pk"`
-	freq  int64    `json: "freq"`
+	Words []string `json:"words"`
+	Pk    int64    `json:"pk"`
+	Freq  int64    `json:"freq"`
 }
 
 type DayKyoki struct {
-	db         *sql.DB  `json: "-"`
-	dateString string   `json: "date"`
-	kyoki      []*Kyoki `json: "kyoki"`
+	db         *sql.DB  `json:"-"`
+	DateString string   `json:"date"`
+	Kyoki      []*Kyoki `json:"kyoki"`
 }
 
 func New(dateString string, db *sql.DB) *DayKyoki {
-	return &DayKyoki{db: db, dateString: dateString, kyoki: make([]*Kyoki, 0)}
+	return &DayKyoki{db: db, DateString: dateString, Kyoki: make([]*Kyoki, 0)}
 }
 
 func (d *DayKyoki) Get() *DayKyoki {
-	d.kyoki = d.getKyoki()
-	for _, k := range d.kyoki {
-		kyokiPk := k.pk
-		k.words = d.GetKyokiItem(kyokiPk)
+	d.Kyoki = d.getKyoki()
+	for _, k := range d.Kyoki {
+		kyokiPk := k.Pk
+		k.Words = d.GetKyokiItem(kyokiPk)
 	}
 	return d
 }
@@ -37,7 +37,7 @@ func (d *DayKyoki) getKyoki() []*Kyoki {
 	ORDER BY k.freq DESC
 	LIMIT 30
 	`
-	rows, err := d.db.Query(selectStmt, d.dateString)
+	rows, err := d.db.Query(selectStmt, d.DateString)
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,7 @@ func (d *DayKyoki) getKyoki() []*Kyoki {
 		if err != nil {
 			panic(err)
 		}
-		kyokiList = append(kyokiList, &Kyoki{pk: n2i(pk), freq: n2i(freq), words: make([]string, 0)})
+		kyokiList = append(kyokiList, &Kyoki{Pk: n2i(pk), Freq: n2i(freq), Words: make([]string, 0)})
 	}
 	return kyokiList
 }
