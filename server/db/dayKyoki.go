@@ -16,8 +16,8 @@ type DayKyoki struct {
 	kyoki      []*Kyoki `json: "kyoki"`
 }
 
-func New(dateString string, db *sql.DB) DayKyoki {
-	return DayKyoki{db: db, dateString: dateString, kyoki: make([]*Kyoki, 0)}
+func New(dateString string, db *sql.DB) *DayKyoki {
+	return &DayKyoki{db: db, dateString: dateString, kyoki: make([]*Kyoki, 0)}
 }
 
 func (d *DayKyoki) Get() *DayKyoki {
