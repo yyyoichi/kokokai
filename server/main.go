@@ -48,10 +48,9 @@ func handleDayKyoki(w http.ResponseWriter, r *http.Request) {
 	}
 	defer connection.Close()
 	kyoki := db.New(dateString, connection)
-	w.WriteHeader(200)
-	kyoki = kyoki.Get()
 	println(kyoki.Kyoki)
-	json.NewEncoder(w).Encode(kyoki.Get())
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(kyoki)
 }
 
 func loadEnv() {

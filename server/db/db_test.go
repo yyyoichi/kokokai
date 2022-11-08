@@ -130,6 +130,19 @@ func TestDaykyoki(t *testing.T) {
 	t.Logf("pk: %d, freq: %d", kyokiList[0].Pk, kyokiList[0].Freq)
 }
 
+func BenchmarkDayKyoki(b *testing.B) {
+	testLoadEnv()
+	db, err := GetDatabase()
+	if err != nil {
+		b.Errorf("cannot connect db.")
+	}
+	defer db.Close()
+	dateString := "2022-10-26"
+	b.StartTimer()
+	New(dateString, db)
+	b.StopTimer()
+}
+
 func testingString(t *testing.T, v interface{}) {
 	nv, ok := v.(sql.NullString)
 	if !ok {
