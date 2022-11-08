@@ -31,6 +31,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Response{Status: "ok", Message: "Hello world! " + env})
 }
 func handleDayKyoki(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	dateString := r.URL.Query().Get("d")
 	fmt.Println(dateString)
 	regex := regexp.MustCompile(`[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])`)
@@ -47,10 +48,9 @@ func handleDayKyoki(w http.ResponseWriter, r *http.Request) {
 	}
 	defer connection.Close()
 	kyoki := db.New(dateString, connection)
-	w.WriteHeader(200)
-	kyoki = kyoki.Get()
 	println(kyoki.Kyoki)
-	json.NewEncoder(w).Encode(kyoki.Get())
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(kyoki)
 }
 
 func loadEnv() {
