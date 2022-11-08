@@ -2,11 +2,26 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/joho/godotenv"
 )
 
+func testLoadEnv() {
+	currentDir, _ := os.Getwd()
+	envPath := strings.ReplaceAll(filepath.Join(currentDir, "config/dev/test_db.env"), "\\", "/")
+	err := godotenv.Load(envPath)
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
+}
+
 func TestGetPsqlConn(t *testing.T) {
+	testLoadEnv()
 	conn := getPsqlConn()
 	configs := strings.Split(conn, " ")
 	for _, cnf := range configs {
@@ -20,6 +35,7 @@ func TestGetPsqlConn(t *testing.T) {
 	}
 }
 func TestDatabaseConnect(t *testing.T) {
+	testLoadEnv()
 	db, err := GetDatabase()
 	if err != nil {
 		t.Error("cannot connect database")
@@ -34,6 +50,7 @@ func TestDatabaseConnect(t *testing.T) {
 }
 
 func TestQueryDatabase(t *testing.T) {
+	testLoadEnv()
 	db, err := GetDatabase()
 	if err != nil {
 		t.Errorf("cannot connect db.")
@@ -59,6 +76,7 @@ func TestQueryDatabase(t *testing.T) {
 }
 
 func TestNullXXConvert(t *testing.T) {
+	testLoadEnv()
 	db, err := GetDatabase()
 	if err != nil {
 		t.Errorf("cannot connect db.")
@@ -97,6 +115,7 @@ func TestNullXXConvert(t *testing.T) {
 }
 
 func TestDaykyoki(t *testing.T) {
+	testLoadEnv()
 	db, err := GetDatabase()
 	if err != nil {
 		t.Errorf("cannot connect db.")
@@ -112,6 +131,7 @@ func TestDaykyoki(t *testing.T) {
 }
 
 func TestKyokiItem(t *testing.T) {
+	testLoadEnv()
 	db, err := GetDatabase()
 	if err != nil {
 		t.Errorf("cannot connect db.")
