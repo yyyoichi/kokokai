@@ -3,23 +3,14 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"google.golang.org/appengine/v2"
 )
 
 func getPsqlConn() string {
-	if !appengine.IsAppEngine() {
-		err := godotenv.Load("config/dev/.env")
-		if err != nil {
-			log.Fatal("Error loading .env file")
-		}
-	}
 	currentDir, _ := os.Getwd()
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
