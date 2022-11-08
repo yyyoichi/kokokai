@@ -11,26 +11,30 @@ type Kyoki struct {
 }
 
 type DayKyoki struct {
-	db         *sql.DB `json: "-"`
-	dateString string  `json: "date"`
-	kyoki      []Kyoki `json: "kyoki"`
+	db         *sql.DB  `json: "-"`
+	dateString string   `json: "date"`
+	kyoki      []*Kyoki `json: "kyoki"`
 }
 
 func New(dateString string, db *sql.DB) DayKyoki {
-	return DayKyoki{db: db, dateString: dateString, kyoki: make([]Kyoki, 0)}
+	return DayKyoki{db: db, dateString: dateString, kyoki: make([]*Kyoki, 0)}
 }
 
 func (d *DayKyoki) Get() *DayKyoki {
 	d.kyoki = d.getKyoki()
+	for _, k := range d.kyoki {
+		kyokiPk := k.pk
+		k.words = d.GetKyokiItem(kyokiPk)
+	}
 	return d
 }
-func (d *DayKyoki) getKyoki() []Kyoki {
+func (d *DayKyoki) getKyoki() []*Kyoki {
 	selectStmt := `
 	SELECT k.pk AS pk, k.freq AS freq
 	FROM kyokiday kd
-	JOIN kyoki k ON kd.pk = kyoki.kyokiday
-	WHERE kd.pk ='?'
-	ORDER BY k.req DESC
+	JOIN kyoki k ON kd.pk = k.kyokiday
+	WHERE kd.date = $1
+	ORDER BY k.freq DESC
 	LIMIT 30
 	`
 	rows, err := d.db.Query(selectStmt, d.dateString)
@@ -38,7 +42,7 @@ func (d *DayKyoki) getKyoki() []Kyoki {
 		panic(err)
 	}
 	defer rows.Close()
-	var kyokiList []Kyoki
+	var kyokiList []*Kyoki
 	for rows.Next() {
 		var pk sql.NullInt64
 		var freq sql.NullInt64
@@ -46,16 +50,14 @@ func (d *DayKyoki) getKyoki() []Kyoki {
 		if err != nil {
 			panic(err)
 		}
-		kyokiPk := n2i(pk)
-		words := d.GetKyokiItem(kyokiPk)
-		kyokiList = append(kyokiList, Kyoki{pk: kyokiPk, freq: n2i(freq), words: words})
+		kyokiList = append(kyokiList, &Kyoki{pk: n2i(pk), freq: n2i(freq), words: make([]string, 0)})
 	}
 	return kyokiList
 }
 func (d *DayKyoki) GetKyokiItem(kyokiPk int64) []string {
 	selectStmt := `
 	SELECT w.word AS word
-	FORM kyokiitem ki JOIN word w ON ki.word = w.code
+	FROM kyokiitem ki JOIN word w ON ki.word = w.code
 	WHERE ki.kyoki = ?
 	`
 	rows, err := d.db.Query(selectStmt, kyokiPk)
