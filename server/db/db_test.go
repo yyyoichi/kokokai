@@ -123,25 +123,11 @@ func TestDaykyoki(t *testing.T) {
 	defer db.Close()
 	dateString := "2022-10-26"
 	kyoki := New(dateString, db)
-	kyokiList := kyoki.getKyoki()
+	kyokiList := kyoki.Kyoki
 	if len(kyokiList) != 30 {
 		t.Errorf("kyokiList len=%d", len(kyokiList))
 	}
 	t.Logf("pk: %d, freq: %d", kyokiList[0].Pk, kyokiList[0].Freq)
-}
-
-func TestKyokiItem(t *testing.T) {
-	testLoadEnv()
-	db, err := GetDatabase()
-	if err != nil {
-		t.Errorf("cannot connect db.")
-	}
-	defer db.Close()
-	dateString := "2022-10-26"
-	kyokiPk := int64(1458)
-	kyoki := New(dateString, db)
-	words := kyoki.GetKyokiItem(kyokiPk)
-	t.Log(words)
 }
 
 func testingString(t *testing.T, v interface{}) {
