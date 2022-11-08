@@ -58,7 +58,7 @@ func (d *DayKyoki) GetKyokiItem(kyokiPk int64) []string {
 	selectStmt := `
 	SELECT w.word AS word
 	FROM kyokiitem ki JOIN word w ON ki.word = w.code
-	WHERE ki.kyoki = ?
+	WHERE ki.kyoki = $1
 	`
 	rows, err := d.db.Query(selectStmt, kyokiPk)
 	if err != nil {
