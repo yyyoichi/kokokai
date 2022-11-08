@@ -31,7 +31,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Response{Status: "ok", Message: "Hello world! " + env})
 }
 func handleDayKyoki(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	dateString := r.URL.Query().Get("d")
 	fmt.Println(dateString)
 	regex := regexp.MustCompile(`[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])`)
