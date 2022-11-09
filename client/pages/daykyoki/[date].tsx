@@ -1,5 +1,4 @@
 import { GetStaticProps } from "next";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
 type DayKyoki = {
     date: string;
