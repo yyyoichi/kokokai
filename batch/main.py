@@ -171,7 +171,9 @@ def main(days: int):
 
     # conn.commit()
 if __name__ == "__main__":
-    arg = sys.argv[1]
-    if arg is None:
-        arg = 10
-    main(arg)
+    args = sys.argv
+    if len(args) < 2:
+        days = 10
+    else:
+        days = int(args[1])
+    main(days)
