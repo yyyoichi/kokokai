@@ -1,6 +1,7 @@
 import collections
 import datetime
 import itertools
+import sys
 from src.sentence import daySpeech
 from src.mcb import getMecab, Morpheme
 from src.db import get_connection
@@ -73,14 +74,18 @@ def get_upper(pl: list, minfreq: int, max: int) -> list[tuple[tuple[str], int]]:
     return sorted(dcnt.items(), key=lambda x: x[1], reverse=True)[:max]
 
 
-def main():
+def main(days: int):
+    # 10日前よりも最近のデータは取らないぞ
+    if days < 10:
+        return
+
     print(datetime.datetime.now(datetime.timezone(
         datetime.timedelta(hours=9))))
     """
     その日の共起リストをDBに格納する
     """
     date = (datetime.datetime.now(datetime.timezone(
-        datetime.timedelta(hours=9))) - datetime.timedelta(days=10)).strftime("%Y-%m-%d")
+        datetime.timedelta(hours=9))) - datetime.timedelta(days=days)).strftime("%Y-%m-%d")
 
     # 文章ごとの名詞リスト
     noun_list = get_nouns(date)
@@ -164,4 +169,7 @@ def main():
 
     # conn.commit()
 if __name__ == "__main__":
-    main()
+    arg = sys.argv[1]
+    if arg is None:
+        arg = 10
+    main(arg)
