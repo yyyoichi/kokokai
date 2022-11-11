@@ -45,6 +45,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
             : process.env.NEXT_PUBLIC_NODE_ENV === "test"
             ? "https://kokokaidev-dot-kokokai.uw.r.appspot.com/"
             : "http://localhost:8080/";
+    console.log(process.env.NEXT_PUBLIC_NODE_ENV);
     const url = `${host}daykyoki?d=${date}`;
     const res = await fetch(url).catch((e) => {
         console.log(e);
