@@ -110,7 +110,7 @@ def main(days: int):
     for p in double_pair_list:
         pair_list.extend(p)
 
-    upper_list = get_upper(pair_list, 5, 100)
+    upper_list = get_upper(pair_list, 5, 20)
 
     # kyokiday を新規
     cursor.execute("select nextval('kyokiday_pk_seq')")
