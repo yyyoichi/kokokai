@@ -16,7 +16,7 @@ func getPsqlConn() string {
 	dbname := os.Getenv("DB_NAME")
 	host := os.Getenv("DB_HOST")
 	conf := fmt.Sprintf(
-		"user=%s password=%s database=%s host=%s",
+		"user=%s password=%s database=%s host=%s sslmode=disable",
 		user, password, dbname, host,
 	)
 	return conf
