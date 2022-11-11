@@ -40,11 +40,11 @@ export const getStaticProps: GetStaticProps = async (context) => {
     );
     let json: DayKyoki;
     const host =
-        process.env.NEXT_PUBLIC_NODE_ENV === "production"
+        process.env.VERCEL_ENV === "production"
             ? "https://kokokai.uw.r.appspot.com/"
-            : process.env.NEXT_PUBLIC_NODE_ENV === "test"
-            ? "https://kokokaidev-dot-kokokai.uw.r.appspot.com/"
-            : "http://localhost:8080/";
+            : process.env.VERCEL_ENV === "dev"
+            ? "http://localhost:8080/"
+            : "https://kokokaidev-dot-kokokai.uw.r.appspot.com/";
     console.log(process.env.NEXT_PUBLIC_NODE_ENV);
     const url = `${host}daykyoki?d=${date}`;
     const res = await fetch(url).catch((e) => {
