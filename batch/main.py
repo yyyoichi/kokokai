@@ -74,9 +74,20 @@ def get_upper(pl: list, minfreq: int, max: int) -> list[tuple[tuple[str], int]]:
     return sorted(dcnt.items(), key=lambda x: x[1], reverse=True)[:max]
 
 
+# DBから引っ張ってきた単語のkey。圧迫するかも
+word_pk_dict = {}
+
+conn = get_connection()
+cursor = conn.cursor()
+
+
 def main(days: int):
     # 10日前よりも最近のデータは取らないぞ
     if days < 10:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        print("end\n\n")
         return
 
     print(datetime.datetime.now(datetime.timezone(
@@ -100,11 +111,6 @@ def main(days: int):
         pair_list.extend(p)
 
     upper_list = get_upper(pair_list, 5, 100)
-
-    word_pk_dict = {}
-
-    conn = get_connection()
-    cursor = conn.cursor()
 
     # kyokiday を新規
     cursor.execute("select nextval('kyokiday_pk_seq')")
@@ -161,11 +167,7 @@ def main(days: int):
                 (kyoki_day_pk, kyoki_pk, word_pk)
             )
             print("\t\tinsert kyokiitem! word:", word)
-    cursor.close()
-    conn.commit()
-    conn.close()
-    print("end\n\n")
-
+    return main(days-1)
 
     # conn.commit()
 if __name__ == "__main__":
