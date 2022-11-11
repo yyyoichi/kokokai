@@ -43,7 +43,7 @@ def get_nouns(date: str):
     def is_target(mph: Morpheme):
         v = Validation(mph)
         if v.is_noun() and not v.is_asterisk() and not v.is_int() and not v.is_stop_word():
-            return True
+            return mph.prototype() in noun_list
         else:
             return False
 
