@@ -43,7 +43,7 @@ def get_nouns(date: str):
     def is_target(mph: Morpheme):
         v = Validation(mph)
         if v.is_noun() and not v.is_asterisk() and not v.is_int() and not v.is_stop_word():
-            return mph.prototype() in noun_list
+            return True
         else:
             return False
 
@@ -52,7 +52,7 @@ def get_nouns(date: str):
         morpheme = next(p, None)
         sentence_noun_list = []
         while (morpheme):
-            if is_target(morpheme):
+            if is_target(morpheme) and morpheme.prototype() not in sentence_noun_list:
                 sentence_noun_list.append(morpheme.prototype())
             morpheme = next(p, None)
         noun_list.append(sentence_noun_list)
@@ -82,8 +82,8 @@ cursor = conn.cursor()
 
 
 def main(days: int):
-    # 10日前よりも最近のデータは取らないぞ
-    if days < 10:
+    # 8日前よりも最近のデータは取らないぞ
+    if days < 8:
         cursor.close()
         conn.commit()
         conn.close()
@@ -124,7 +124,7 @@ def main(days: int):
         (kyoki_day_pk, date,)
     )
     print("insert kyokiday! pk:", kyoki_day_pk, "date:", date)
-
+    print("upper length: ", len(upper_list))
     # 共起リストを1つずつ格納
     for pair in upper_list:
         cursor.execute("select nextval('kyoki_pk_seq')")
@@ -146,6 +146,7 @@ def main(days: int):
                 db_word_key = cursor.fetchone()
                 if db_word_key:
                     word_pk = db_word_key[0]
+                    print("\t\t\tget word from DB! pk:", word_pk)
 
                 # DBにワードがない
                 else:
@@ -159,7 +160,7 @@ def main(days: int):
                         "insert into word(code ,word) values(%s, %s)",
                         (word_pk, word,)
                     )
-                    print("\t\t\tinsert word! pk:", word_pk)
+                    print("\t\t\tinsert word into DB! pk:", word_pk)
 
             # ペア内容（kyokiitem）を挿入
             cursor.execute(
@@ -173,7 +174,7 @@ def main(days: int):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) < 2:
-        days = 10
+        days = 8
     else:
         days = int(args[1])
     main(days)
