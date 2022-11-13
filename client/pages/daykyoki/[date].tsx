@@ -1,4 +1,10 @@
 import { GetStaticProps } from "next";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Alert from "@mui/material/Alert";
+import Container from "@mui/material/Container";
 
 type DayKyoki = {
     date: string;
@@ -12,7 +18,28 @@ type DayKyoki = {
 export default function DayKyoki({ date, kyoki }: DayKyoki) {
     console.log(date);
     console.log(kyoki);
-    return <div>hello</div>;
+    return (
+        <>
+            <div>
+                <Container maxWidth="sm">
+                    <Alert severity="info">出現回数: 共起ワード</Alert>
+                    <List>
+                        {kyoki.map((x, i) => {
+                            return (
+                                <ListItem key={i} disablePadding>
+                                    <ListItemButton>
+                                        <ListItemText
+                                            primary={`${x.freq}: ${x.words[0]}, ${x.words[1]}`}
+                                        />
+                                    </ListItemButton>
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                </Container>
+            </div>
+        </>
+    );
 }
 
 export async function getStaticPaths() {
