@@ -22,6 +22,13 @@ def init():
         conn.commit()
     conn.close()
 
+def test():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT CURRENT_TIMESTAMP')
+    print(cursor.fetchone())
+    conn.close()
+
 
 if __name__ == "__main__":
     arg = sys.argv[1]
@@ -30,3 +37,5 @@ if __name__ == "__main__":
         init()
     elif arg == "delete":
         delete()
+    elif arg == "test":
+        test()
