@@ -13,7 +13,7 @@ import (
 
 func testLoadEnv() {
 	currentDir, _ := os.Getwd()
-	envPath := strings.ReplaceAll(filepath.Join(currentDir, "config/dev/test_db.env"), "\\", "/")
+	envPath := strings.ReplaceAll(filepath.Join(currentDir, "config/.env"), "\\", "/")
 	err := godotenv.Load(envPath)
 	if err != nil {
 		fmt.Println("Error loading .env file")

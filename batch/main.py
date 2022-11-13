@@ -1,6 +1,7 @@
 import collections
 import datetime
 import itertools
+import sys
 from src.sentence import daySpeech
 from src.mcb import getMecab, Morpheme
 from src.db import get_connection
@@ -51,7 +52,7 @@ def get_nouns(date: str):
         morpheme = next(p, None)
         sentence_noun_list = []
         while (morpheme):
-            if is_target(morpheme):
+            if is_target(morpheme) and morpheme.prototype() not in sentence_noun_list:
                 sentence_noun_list.append(morpheme.prototype())
             morpheme = next(p, None)
         noun_list.append(sentence_noun_list)
@@ -73,14 +74,29 @@ def get_upper(pl: list, minfreq: int, max: int) -> list[tuple[tuple[str], int]]:
     return sorted(dcnt.items(), key=lambda x: x[1], reverse=True)[:max]
 
 
-def main():
+# DBから引っ張ってきた単語のkey。圧迫するかも
+word_pk_dict = {}
+
+conn = get_connection()
+cursor = conn.cursor()
+
+
+def main(days: int):
+    # 8日前よりも最近のデータは取らないぞ
+    if days < 8:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        print("end\n\n")
+        return
+
     print(datetime.datetime.now(datetime.timezone(
         datetime.timedelta(hours=9))))
     """
     その日の共起リストをDBに格納する
     """
     date = (datetime.datetime.now(datetime.timezone(
-        datetime.timedelta(hours=9))) - datetime.timedelta(days=10)).strftime("%Y-%m-%d")
+        datetime.timedelta(hours=9))) - datetime.timedelta(days=days)).strftime("%Y-%m-%d")
 
     # 文章ごとの名詞リスト
     noun_list = get_nouns(date)
@@ -94,12 +110,7 @@ def main():
     for p in double_pair_list:
         pair_list.extend(p)
 
-    upper_list = get_upper(pair_list, 5, 100)
-
-    word_pk_dict = {}
-
-    conn = get_connection()
-    cursor = conn.cursor()
+    upper_list = get_upper(pair_list, 5, 20)
 
     # kyokiday を新規
     cursor.execute("select nextval('kyokiday_pk_seq')")
@@ -113,7 +124,7 @@ def main():
         (kyoki_day_pk, date,)
     )
     print("insert kyokiday! pk:", kyoki_day_pk, "date:", date)
-
+    print("upper length: ", len(upper_list))
     # 共起リストを1つずつ格納
     for pair in upper_list:
         cursor.execute("select nextval('kyoki_pk_seq')")
@@ -135,6 +146,7 @@ def main():
                 db_word_key = cursor.fetchone()
                 if db_word_key:
                     word_pk = db_word_key[0]
+                    print("\t\t\tget word from DB! pk:", word_pk)
 
                 # DBにワードがない
                 else:
@@ -148,7 +160,7 @@ def main():
                         "insert into word(code ,word) values(%s, %s)",
                         (word_pk, word,)
                     )
-                    print("\t\t\tinsert word! pk:", word_pk)
+                    print("\t\t\tinsert word into DB! pk:", word_pk)
 
             # ペア内容（kyokiitem）を挿入
             cursor.execute(
@@ -156,12 +168,13 @@ def main():
                 (kyoki_day_pk, kyoki_pk, word_pk)
             )
             print("\t\tinsert kyokiitem! word:", word)
-    cursor.close()
-    conn.commit()
-    conn.close()
-    print("end\n\n")
-
+    return main(days-1)
 
     # conn.commit()
 if __name__ == "__main__":
-    main()
+    args = sys.argv
+    if len(args) < 2:
+        days = 8
+    else:
+        days = int(args[1])
+    main(days)

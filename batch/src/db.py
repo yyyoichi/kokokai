@@ -9,10 +9,6 @@ def get_connection():
         host=setting.DB_HOST,
         port=setting.DB_PORT,
         database=setting.DB_NAME,
-        sslmode="verify-ca",
-        sslrootcert=setting.SSL_ROOT_CERT,
-        sslcert=setting.SSL_CERT,
-        sslkey=setting.SSL_KEY
     )
 
 

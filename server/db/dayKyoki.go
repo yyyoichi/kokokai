@@ -33,7 +33,7 @@ func New(dateString string, db *sql.DB) *DayKyoki {
 	JOIN kyoki k ON kd.pk = k.kyokiday
 	WHERE kd.date = $1
 	ORDER BY k.freq DESC
-	LIMIT 30
+	LIMIT 20
 	`
 	rows, err := db.Query(selectStmt, dateString)
 	if err != nil {

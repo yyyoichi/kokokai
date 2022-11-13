@@ -40,11 +40,11 @@ export const getStaticProps: GetStaticProps = async (context) => {
     );
     let json: DayKyoki;
     const host =
-        process.env.NEXT_PUBLIC_NODE_ENV === "production"
+        process.env.VERCEL_ENV === "production"
             ? "https://kokokai.uw.r.appspot.com/"
-            : process.env.NODE_ENV === "test"
-            ? "https://kokokaidev-dot-kokokai.uw.r.appspot.com/"
-            : "http://localhost:8080/";
+            : process.env.VERCEL_ENV === "dev"
+            ? "http://localhost:8080/"
+            : "https://kokokaidev-dot-kokokai.uw.r.appspot.com/";
     const url = `${host}daykyoki?d=${date}`;
     const res = await fetch(url).catch((e) => {
         console.log(e);
@@ -54,6 +54,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
         throw Error("not found: " + date);
     }
     json = await res.json();
+    console.log(process.env.NODE_ENV, url, json.kyoki ? json.kyoki[0] : "null");
     return {
         // Passed to the page component as props
         props: { date: json.date, kyoki: json.kyoki },
