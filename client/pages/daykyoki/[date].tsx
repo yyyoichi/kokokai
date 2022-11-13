@@ -41,10 +41,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
     let json: DayKyoki;
     const host =
         process.env.VERCEL_ENV === "production"
-            ? "https://kokokai.uw.r.appspot.com/"
+            ? "https://molten-mariner-368507.uw.r.appspot.com/"
             : process.env.VERCEL_ENV === "dev"
             ? "http://localhost:8080/"
-            : "https://kokokaidev-dot-kokokai.uw.r.appspot.com/";
+            : "https://collokaidev-dot-molten-mariner-368507.uw.r.appspot.com/";
     const url = `${host}daykyoki?d=${date}`;
     const res = await fetch(url).catch((e) => {
         console.log(e);
