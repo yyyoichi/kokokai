@@ -3,13 +3,27 @@ import src.setting as setting
 
 
 def get_connection():
-    return psycopg2.connect(
-        user=setting.DB_USER,
-        password=setting.DB_PASS,
-        host=setting.DB_HOST,
-        port=setting.DB_PORT,
-        database=setting.DB_NAME,
-    )
+    if setting.ENV == "production":
+        return psycopg2.connect(
+            user=setting.DB_USER,
+            password=setting.DB_PASS,
+            host=setting.DB_HOST,
+            port=setting.DB_PORT,
+            database=setting.DB_NAME,
+            sslmode="verify-ca",
+            sslrootcert=setting.SSL_ROOT_CERT,
+            sslcert=setting.SSL_CERT,
+            sslkey=setting.SSL_KEY
+        )
+    else:
+        return psycopg2.connect(
+            user=setting.DB_USER,
+            password=setting.DB_PASS,
+            host=setting.DB_HOST,
+            port=setting.DB_PORT,
+            database=setting.DB_NAME,
+        )
+    
 
 
 class DB:
