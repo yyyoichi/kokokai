@@ -27,8 +27,8 @@ export default class NetworkNode {
      * @param label2 繋げたい頂点
      */
     addEdge(label1: string, label2: string) {
-        const l1 = this.nodeHash.indexOf(label1);
-        const l2 = this.nodeHash.indexOf(label2);
+        const l1 = this.nodeHash.indexOf(label1) + 1;
+        const l2 = this.nodeHash.indexOf(label2) + 1;
         this.edges.push({ from: l1, to: l2 });
     }
     getNodes(): Node[] {
