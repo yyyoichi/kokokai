@@ -1,5 +1,7 @@
 import { Box } from "@mui/material";
 import Stack from "@mui/material/Stack";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useRouter } from "next/router";
 import { getYYYYMMDD } from "../src/FormatDate";
 
@@ -18,7 +20,7 @@ export default function Dateupdown({ dateString }: { dateString: string }) {
                 router.push(getPath(upd));
             }}
         >
-            {">"}
+            <ArrowForwardIosIcon />
         </div>
     );
     const down = (
@@ -29,13 +31,15 @@ export default function Dateupdown({ dateString }: { dateString: string }) {
                 router.push(getPath(upd));
             }}
         >
-            {"<"}
+            <ArrowBackIosNewIcon />
         </div>
     );
     return (
         <Stack direction="row" spacing={2} justifyContent={"center"} my={2}>
             {down}
-            <Box>{dateString}</Box>
+            <Box fontWeight={500} fontSize={18}>
+                {dateString}
+            </Box>
             {up}
         </Stack>
     );
