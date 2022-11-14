@@ -8,6 +8,8 @@ import Container from "@mui/material/Container";
 import { Network } from "vis-network/standalone/umd/vis-network.min.js";
 import { useEffect, useRef } from "react";
 import NetworkNode from "../../src/NetworkNode";
+import { Box } from "@mui/material";
+import Dateupdown from "../../util/Dateupdown";
 
 type DayKyoki = {
     date: string;
@@ -36,21 +38,19 @@ export default function DayKyoki({ date, kyoki }: DayKyoki) {
     }, [nodeData]);
     return (
         <>
-            <div>
+            <Box pt={2}>
                 <Container maxWidth="sm">
-                    <Container>
-                        <div
-                            style={{
-                                height: "500px",
-                                border: "solid 1px gray",
-                            }}
-                        >
-                            <div ref={graphRef}></div>
-                        </div>
-                    </Container>
+                    <Box border={"solid 1px gray"} height={"500px"}>
+                        <div ref={graphRef}></div>
+                    </Box>
+                    <Dateupdown dateString={date} />
+                    {kyoki.length > 0 ? (
+                        <Alert severity="info">出現回数: 共起ワード</Alert>
+                    ) : (
+                        <Alert severity="info">データがありません</Alert>
+                    )}
                     {kyoki.length > 0 ? (
                         <>
-                            <Alert severity="info">出現回数: 共起ワード</Alert>
                             <List>
                                 {kyoki.map((x, i) => {
                                     return (
@@ -66,13 +66,10 @@ export default function DayKyoki({ date, kyoki }: DayKyoki) {
                             </List>
                         </>
                     ) : (
-                        <>
-                            <Alert severity="info">データがありません</Alert>
-                            <div>{`<　${date}　>`}</div>
-                        </>
+                        <></>
                     )}
                 </Container>
-            </div>
+            </Box>
         </>
     );
 }
@@ -120,5 +117,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
     return {
         // Passed to the page component as props
         props: { date: json.date, kyoki: json.kyoki || [] },
+        revalidate: 60 * 10 * 10, // 10min
     };
 };
