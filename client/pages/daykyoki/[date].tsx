@@ -1,4 +1,15 @@
 import { GetStaticProps } from "next";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Alert from "@mui/material/Alert";
+import Container from "@mui/material/Container";
+import { Network } from "vis-network/standalone/umd/vis-network.min.js";
+import { useEffect, useRef } from "react";
+import NetworkNode from "../../src/NetworkNode";
+import { Box } from "@mui/material";
+import Dateupdown from "../../util/Dateupdown";
 
 type DayKyoki = {
     date: string;
@@ -10,9 +21,53 @@ type DayKyoki = {
 };
 
 export default function DayKyoki({ date, kyoki }: DayKyoki) {
-    console.log(date);
-    console.log(kyoki);
-    return <div>hello</div>;
+    const graphRef = useRef<HTMLDivElement>(null!);
+    const nn = new NetworkNode();
+    kyoki.forEach(({ words }) => {
+        nn.addNode(words[0]);
+        nn.addNode(words[1]);
+        nn.addEdge(words[0], words[1]);
+    });
+    const nodeData = nn.getNodeData();
+    useEffect(() => {
+        new Network(graphRef.current, nodeData, { height: "350px" });
+    }, [nodeData]);
+    return (
+        <>
+            <Box pt={2}>
+                <Container maxWidth="sm">
+                    <Box border={"solid 1px gray"} height={"350px"}>
+                        <div ref={graphRef}></div>
+                    </Box>
+                    <Dateupdown dateString={date} />
+                    {kyoki.length > 0 ? (
+                        <Alert severity="info">出現回数: 共起ワード</Alert>
+                    ) : (
+                        <Alert severity="info">データがありません</Alert>
+                    )}
+                    {kyoki.length > 0 ? (
+                        <>
+                            <List>
+                                {kyoki.map((x, i) => {
+                                    return (
+                                        <ListItem key={i} disablePadding>
+                                            <ListItemButton>
+                                                <ListItemText
+                                                    primary={`${x.freq}: ${x.words[0]}, ${x.words[1]}`}
+                                                />
+                                            </ListItemButton>
+                                        </ListItem>
+                                    );
+                                })}
+                            </List>
+                        </>
+                    ) : (
+                        <></>
+                    )}
+                </Container>
+            </Box>
+        </>
+    );
 }
 
 export async function getStaticPaths() {
@@ -57,6 +112,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     console.log(process.env.NODE_ENV, url, json.kyoki ? json.kyoki[0] : "null");
     return {
         // Passed to the page component as props
-        props: { date: json.date, kyoki: json.kyoki },
+        props: { date: json.date, kyoki: json.kyoki || [] },
+        revalidate: 60 * 10 * 10, // 10min
     };
 };
