@@ -5,6 +5,9 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Alert from "@mui/material/Alert";
 import Container from "@mui/material/Container";
+import { Network } from "vis-network/standalone/umd/vis-network.min.js";
+import { useEffect, useRef } from "react";
+import NetworkNode from "../../src/NetworkNode";
 
 type DayKyoki = {
     date: string;
@@ -18,23 +21,35 @@ type DayKyoki = {
 export default function DayKyoki({ date, kyoki }: DayKyoki) {
     console.log(date);
     console.log(kyoki);
+    const graphRef = useRef<HTMLDivElement>(null!);
+    const nn = new NetworkNode();
+    kyoki.forEach(({ words }) => {
+        nn.addNode(words[0]);
+        nn.addNode(words[1]);
+        nn.addEdge(words[0], words[1]);
+    });
+    const nodeData = nn.getNodeData();
+    useEffect(() => {
+        if (nodeData.edges.length > 0) {
+            new Network(graphRef.current, nodeData, { height: "500px" });
+        }
+    }, [nodeData]);
     return (
         <>
             <div>
                 <Container maxWidth="sm">
-                    {kyoki !== null ? (
+                    <Container>
+                        <div
+                            style={{
+                                height: "500px",
+                                border: "solid 1px gray",
+                            }}
+                        >
+                            <div ref={graphRef}></div>
+                        </div>
+                    </Container>
+                    {kyoki.length > 0 ? (
                         <>
-                            <Container>
-                                <div
-                                    style={{
-                                        height: "200px",
-                                        border: "solid 2px",
-                                    }}
-                                >
-                                    図
-                                </div>
-                                <div>{`<　${date}　>`}</div>
-                            </Container>
                             <Alert severity="info">出現回数: 共起ワード</Alert>
                             <List>
                                 {kyoki.map((x, i) => {
@@ -51,7 +66,10 @@ export default function DayKyoki({ date, kyoki }: DayKyoki) {
                             </List>
                         </>
                     ) : (
-                        <Alert severity="info">データがありません</Alert>
+                        <>
+                            <Alert severity="info">データがありません</Alert>
+                            <div>{`<　${date}　>`}</div>
+                        </>
                     )}
                 </Container>
             </div>
@@ -101,6 +119,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
     console.log(process.env.NODE_ENV, url, json.kyoki ? json.kyoki[0] : "null");
     return {
         // Passed to the page component as props
-        props: { date: json.date, kyoki: json.kyoki },
+        props: { date: json.date, kyoki: json.kyoki || [] },
     };
 };
