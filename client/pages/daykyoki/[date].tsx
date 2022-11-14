@@ -22,20 +22,37 @@ export default function DayKyoki({ date, kyoki }: DayKyoki) {
         <>
             <div>
                 <Container maxWidth="sm">
-                    <Alert severity="info">出現回数: 共起ワード</Alert>
-                    <List>
-                        {kyoki.map((x, i) => {
-                            return (
-                                <ListItem key={i} disablePadding>
-                                    <ListItemButton>
-                                        <ListItemText
-                                            primary={`${x.freq}: ${x.words[0]}, ${x.words[1]}`}
-                                        />
-                                    </ListItemButton>
-                                </ListItem>
-                            );
-                        })}
-                    </List>
+                    {kyoki !== null ? (
+                        <>
+                            <Container>
+                                <div
+                                    style={{
+                                        height: "200px",
+                                        border: "solid 2px",
+                                    }}
+                                >
+                                    図
+                                </div>
+                                <div>{`<　${date}　>`}</div>
+                            </Container>
+                            <Alert severity="info">出現回数: 共起ワード</Alert>
+                            <List>
+                                {kyoki.map((x, i) => {
+                                    return (
+                                        <ListItem key={i} disablePadding>
+                                            <ListItemButton>
+                                                <ListItemText
+                                                    primary={`${x.freq}: ${x.words[0]}, ${x.words[1]}`}
+                                                />
+                                            </ListItemButton>
+                                        </ListItem>
+                                    );
+                                })}
+                            </List>
+                        </>
+                    ) : (
+                        <Alert severity="info">データがありません</Alert>
+                    )}
                 </Container>
             </div>
         </>
