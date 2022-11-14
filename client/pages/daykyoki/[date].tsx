@@ -21,8 +21,6 @@ type DayKyoki = {
 };
 
 export default function DayKyoki({ date, kyoki }: DayKyoki) {
-    console.log(date);
-    console.log(kyoki);
     const graphRef = useRef<HTMLDivElement>(null!);
     const nn = new NetworkNode();
     kyoki.forEach(({ words }) => {

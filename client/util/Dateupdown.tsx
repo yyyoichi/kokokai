@@ -11,7 +11,6 @@ export default function Dateupdown({ dateString }: { dateString: string }) {
     const getPath = (di: Date) => {
         return `/daykyoki/${getYYYYMMDD(di)}`;
     };
-    console.log(date);
     const up = (
         <div
             onClick={() => {
