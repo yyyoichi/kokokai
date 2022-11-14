@@ -32,9 +32,7 @@ export default function DayKyoki({ date, kyoki }: DayKyoki) {
     });
     const nodeData = nn.getNodeData();
     useEffect(() => {
-        if (nodeData.edges.length > 0) {
-            new Network(graphRef.current, nodeData, { height: "500px" });
-        }
+        new Network(graphRef.current, nodeData, { height: "500px" });
     }, [nodeData]);
     return (
         <>
