@@ -32,13 +32,13 @@ export default function DayKyoki({ date, kyoki }: DayKyoki) {
     });
     const nodeData = nn.getNodeData();
     useEffect(() => {
-        new Network(graphRef.current, nodeData, { height: "500px" });
+        new Network(graphRef.current, nodeData, { height: "450px" });
     }, [nodeData]);
     return (
         <>
             <Box pt={2}>
                 <Container maxWidth="sm">
-                    <Box border={"solid 1px gray"} height={"500px"}>
+                    <Box border={"solid 1px gray"} height={"450px"}>
                         <div ref={graphRef}></div>
                     </Box>
                     <Dateupdown dateString={date} />
