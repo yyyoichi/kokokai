@@ -21,6 +21,13 @@ type User struct {
 }
 
 func (u *User) Create(conn *sql.DB) error {
+	exists, err := u.Exists(conn)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("exists")
+	}
 	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4)`
 	u.Id = newId()
 	res, err := conn.Exec(s, u.Id, u.Name, u.Email, u.Pass)
