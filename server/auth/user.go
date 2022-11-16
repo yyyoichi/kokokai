@@ -18,18 +18,18 @@ type User struct {
 	CreateAt time.Time
 }
 
-func (u *User) CreateUser(conn *sql.DB) (*User, error) {
+func (u *User) CreateUser(conn *sql.DB) error {
 	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4)`
 	res, err := conn.Exec(s, u.Id, u.Name, u.Email, u.Pass)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	pk, err := res.LastInsertId()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	u.Pk = pk
-	return u, nil
+	return nil
 }
 
 func (u *User) GetUser(conn *sql.DB) (*User, error) {
@@ -56,6 +56,15 @@ func (u *User) GetUser(conn *sql.DB) (*User, error) {
 		return u, nil
 	}
 	return nil, fmt.Errorf("no-data")
+}
+
+func (u *User) DeleteUser(conn *sql.DB) error {
+	s := `DELETE FROM usr WHERE pk=$1`
+	_, err := conn.Exec(s, u.Pk)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u *User) loginstamp(conn *sql.DB) error {
