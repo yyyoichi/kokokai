@@ -32,11 +32,11 @@ func (u *User) CreateUser(conn *sql.DB) error {
 	return nil
 }
 
-func (u *User) GetUser(conn *sql.DB) (*User, error) {
+func (u *User) GetUser(conn *sql.DB) error {
 	s := `SELECT * FROM usr WHERE email=$1, pass=$1`
 	rows, err := conn.Query(s, u.Email, u.Pass)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if rows.Next() {
 		var pk sql.NullInt64
@@ -51,11 +51,11 @@ func (u *User) GetUser(conn *sql.DB) (*User, error) {
 		u.Pk, u.Id, u.Name, u.Email, u.Pass, u.LoginAt, u.UpdateAt, u.CreateAt = db.N2i(pk), db.N2s(id), db.N2s(name), db.N2s(email), db.N2s(pass), db.N2t(loginAt), db.N2t(updateAt), db.N2t(createAt)
 		err := u.loginstamp(conn)
 		if err != nil {
-			return u, err
+			return err
 		}
-		return u, nil
+		return nil
 	}
-	return nil, fmt.Errorf("no-data")
+	return fmt.Errorf("no-user")
 }
 
 func (u *User) DeleteUser(conn *sql.DB) error {
