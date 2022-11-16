@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"kokokai/server/db"
+	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -20,6 +22,7 @@ type User struct {
 
 func (u *User) Create(conn *sql.DB) error {
 	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4)`
+	u.Id = newId()
 	res, err := conn.Exec(s, u.Id, u.Name, u.Email, u.Pass)
 	if err != nil {
 		return err
@@ -30,6 +33,16 @@ func (u *User) Create(conn *sql.DB) error {
 	}
 	u.Pk = pk
 	return nil
+}
+
+func newId() string {
+	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	var b strings.Builder
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < 20; i++ {
+		b.WriteByte(chars[rand.Intn(len(chars))])
+	}
+	return b.String()
 }
 
 func (u *User) Get(conn *sql.DB) error {
