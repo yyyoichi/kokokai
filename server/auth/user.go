@@ -18,7 +18,7 @@ type User struct {
 	CreateAt time.Time
 }
 
-func (u *User) CreateUser(conn *sql.DB) error {
+func (u *User) Create(conn *sql.DB) error {
 	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4)`
 	res, err := conn.Exec(s, u.Id, u.Name, u.Email, u.Pass)
 	if err != nil {
@@ -32,7 +32,7 @@ func (u *User) CreateUser(conn *sql.DB) error {
 	return nil
 }
 
-func (u *User) GetUser(conn *sql.DB) error {
+func (u *User) Get(conn *sql.DB) error {
 	s := `SELECT * FROM usr WHERE email=$1, pass=$1`
 	rows, err := conn.Query(s, u.Email, u.Pass)
 	if err != nil {
@@ -75,7 +75,7 @@ func (u *User) Exists(conn *sql.DB) (bool, error) {
 	return rows.Next(), nil
 }
 
-func (u *User) DeleteUser(conn *sql.DB) error {
+func (u *User) Delete(conn *sql.DB) error {
 	s := `DELETE FROM usr WHERE pk=$1`
 	_, err := conn.Exec(s, u.Pk)
 	if err != nil {
