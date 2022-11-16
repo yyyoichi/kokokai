@@ -46,7 +46,7 @@ func New(dateString string, db *sql.DB) *DayKyoki {
 		var freq sql.NullInt64
 		var words sql.NullString
 		rows.Scan(&pk, &freq, &words)
-		k := &Kyoki{Pk: n2i(pk), Freq: n2i(freq), Words: strings.Split(n2s(words), ",")}
+		k := &Kyoki{Pk: N2i(pk), Freq: N2i(freq), Words: strings.Split(N2s(words), ",")}
 		kyoki = append(kyoki, k)
 	}
 	defer rows.Close()
