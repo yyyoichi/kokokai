@@ -23,6 +23,16 @@ def init():
     conn.close()
 
 
+def user_init():
+    conn = get_connection()
+    cursor = conn.cursor()
+    with open("sql/user.sql", "r", encoding="utf-8") as f:
+        sql = f.read()
+        cursor.execute(sql)
+        conn.commit()
+    conn.close()
+
+
 def test():
     conn = get_connection()
     cursor = conn.cursor()
@@ -40,3 +50,5 @@ if __name__ == "__main__":
         delete()
     elif arg == "test":
         test()
+    elif arg == "user":
+        user_init()
