@@ -5,6 +5,19 @@ import (
 	"time"
 )
 
+func N2(v interface{}) interface{} {
+	switch v := v.(type) {
+	case sql.NullString:
+		return n2s(v)
+	case sql.NullInt64:
+		return n2i(v)
+	case sql.NullTime:
+		return n2t(v)
+	default:
+		return nil
+	}
+}
+
 func n2s(v sql.NullString) string {
 	var s string
 	if v.Valid {
