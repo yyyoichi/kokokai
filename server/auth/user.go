@@ -55,7 +55,24 @@ func (u *User) GetUser(conn *sql.DB) error {
 		}
 		return nil
 	}
-	return fmt.Errorf("no-user")
+	exist, err := u.Exists(conn)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("wrong-pass")
+	} else {
+		return fmt.Errorf("no-email")
+	}
+}
+
+func (u *User) Exists(conn *sql.DB) (bool, error) {
+	s := `SELECT pk FROM usr WHERE email=$1`
+	rows, err := conn.Query(s, u.Email, u.Pass)
+	if err != nil {
+		return false, err
+	}
+	return rows.Next(), nil
 }
 
 func (u *User) DeleteUser(conn *sql.DB) error {
