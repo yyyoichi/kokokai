@@ -68,7 +68,8 @@ func (u *User) Get(conn *sql.DB) error {
 		var updateAt sql.NullTime
 		var createAt sql.NullTime
 		rows.Scan(&pk, &id, &name, &email, &pass, &loginAt, &updateAt, &createAt)
-		u.Pk, u.Id, u.Name, u.Email, u.Pass, u.LoginAt, u.UpdateAt, u.CreateAt = db.N2i(pk), db.N2s(id), db.N2s(name), db.N2s(email), db.N2s(pass), db.N2t(loginAt), db.N2t(updateAt), db.N2t(createAt)
+		u.Pk, u.Id, u.Name, u.Email, u.Pass = db.N2i(pk), db.N2s(id), db.N2s(name), db.N2s(email), db.N2s(pass)
+		u.LoginAt, u.UpdateAt, u.CreateAt = db.N2t(loginAt), db.N2t(updateAt), db.N2t(createAt)
 		err := u.loginstamp(conn)
 		if err != nil {
 			return err
