@@ -122,8 +122,8 @@ func (u *User) Delete() error {
 }
 
 func (u *User) exists(conn *sql.DB) (bool, error) {
-	if u.Email != "" {
-		return false, fmt.Errorf("empty")
+	if u.Email == "" {
+		return false, fmt.Errorf("empty email")
 	}
 	s := `SELECT pk FROM usr WHERE email=$1`
 	rows, err := conn.Query(s, u.Email, u.Pass)
