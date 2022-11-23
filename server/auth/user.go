@@ -69,38 +69,33 @@ func (u *User) Get() error {
 		return err
 	}
 	defer conn.Close()
-	s := `SELECT * FROM usr WHERE (email=$1 and pass=$1) or (id=$3 and pass=$1)`
-	rows, err := conn.Query(s, u.Email, u.Pass, u.Id)
+	var pk sql.NullInt64
+	var id sql.NullString
+	var name sql.NullString
+	var email sql.NullString
+	var pass sql.NullString
+	var loginAt sql.NullTime
+	var updateAt sql.NullTime
+	var createAt sql.NullTime
+	s := `SELECT * FROM usr WHERE (email=$1 and pass=$2) or (id=$3 and pass=$2)`
+	err = conn.QueryRow(s, u.Email, u.Pass, u.Id).Scan(&pk, &id, &name, &email, &pass, &loginAt, &updateAt, &createAt)
 	if err != nil {
-		return err
-	}
-	if rows.Next() {
-		var pk sql.NullInt64
-		var id sql.NullString
-		var name sql.NullString
-		var email sql.NullString
-		var pass sql.NullString
-		var loginAt sql.NullTime
-		var updateAt sql.NullTime
-		var createAt sql.NullTime
-		rows.Scan(&pk, &id, &name, &email, &pass, &loginAt, &updateAt, &createAt)
-		u.Pk, u.Id, u.Name, u.Email, u.Pass = db.N2i(pk), db.N2s(id), db.N2s(name), db.N2s(email), db.N2s(pass)
-		u.LoginAt, u.UpdateAt, u.CreateAt = db.N2t(loginAt), db.N2t(updateAt), db.N2t(createAt)
-		err := u.loginstamp(conn)
+		exists, err := u.exists(conn)
 		if err != nil {
 			return err
 		}
-		return nil
+		if exists {
+			return fmt.Errorf("wrong-pass")
+		} else {
+			return fmt.Errorf("no-email")
+		}
 	}
-	exists, err := u.exists(conn)
-	if err != nil {
+	u.Pk, u.Id, u.Name, u.Email, u.Pass = db.N2i(pk), db.N2s(id), db.N2s(name), db.N2s(email), db.N2s(pass)
+	u.LoginAt, u.UpdateAt, u.CreateAt = db.N2t(loginAt), db.N2t(updateAt), db.N2t(createAt)
+	if u.loginstamp(conn) != nil {
 		return err
 	}
-	if exists {
-		return fmt.Errorf("wrong-pass")
-	} else {
-		return fmt.Errorf("no-email")
-	}
+	return nil
 }
 
 func (u *User) Delete() error {
