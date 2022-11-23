@@ -126,7 +126,7 @@ func (u *User) exists(conn *sql.DB) (bool, error) {
 		return false, fmt.Errorf("empty email")
 	}
 	s := `SELECT pk FROM usr WHERE email=$1`
-	rows, err := conn.Query(s, u.Email, u.Pass)
+	rows, err := conn.Query(s, u.Email)
 	if err != nil {
 		return false, err
 	}
