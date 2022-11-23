@@ -36,13 +36,10 @@ func (u *User) Create() error {
 	if exists {
 		return fmt.Errorf("%s is exists", u.Email)
 	}
-	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4)`
+	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4) RETURNING id`
 	u.Id = newId()
-	res, err := conn.Exec(s, u.Id, u.Id, u.Email, u.Pass)
-	if err != nil {
-		return err
-	}
-	pk, err := res.LastInsertId()
+	var pk int64
+	err = conn.QueryRow(s, u.Id, u.Id, u.Email, u.Pass).Scan(&pk)
 	if err != nil {
 		return err
 	}
