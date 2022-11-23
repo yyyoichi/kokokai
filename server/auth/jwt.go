@@ -24,7 +24,7 @@ func (jt *JwtToken) Generate(u *User) (*string, error) {
 	mc := &myClaims{User: u}
 	mc.ExpiresAt = jwt.NewNumericDate(time.Now().AddDate(0, 0, 1))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mc)
-	tokenString, err := token.SignedString(jt.secret)
+	tokenString, err := token.SignedString([]byte(jt.secret))
 	if err != nil {
 		return nil, err
 	}
