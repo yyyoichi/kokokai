@@ -20,10 +20,25 @@ type User struct {
 	CreateAt time.Time
 }
 
-func (u *User) Create(conn *sql.DB) error {
+func (u *User) Create() error {
+	if u.Pass != "" || u.Email != "" {
+		return fmt.Errorf("empty")
+	}
+	conn, err := db.GetDatabase()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	exists, err := u.exists(conn)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("$s is exists", u.Email)
+	}
 	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4)`
 	u.Id = newId()
-	res, err := conn.Exec(s, u.Id, u.Name, u.Email, u.Pass)
+	res, err := conn.Exec(s, u.Id, u.Id, u.Email, u.Pass)
 	if err != nil {
 		return err
 	}
@@ -45,9 +60,20 @@ func newId() string {
 	return b.String()
 }
 
-func (u *User) Get(conn *sql.DB) error {
-	s := `SELECT * FROM usr WHERE email=$1, pass=$1`
-	rows, err := conn.Query(s, u.Email, u.Pass)
+func (u *User) Get() error {
+	if u.Pass == "" {
+		return fmt.Errorf("empty password")
+	}
+	if u.Email == "" && u.Id == "" {
+		return fmt.Errorf("empty email or id")
+	}
+	conn, err := db.GetDatabase()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	s := `SELECT * FROM usr WHERE (email=$1 and pass=$1) or (id=$3 and pass=$1)`
+	rows, err := conn.Query(s, u.Email, u.Pass, u.Id)
 	if err != nil {
 		return err
 	}
@@ -69,18 +95,36 @@ func (u *User) Get(conn *sql.DB) error {
 		}
 		return nil
 	}
-	exist, err := u.Exists(conn)
+	exists, err := u.exists(conn)
 	if err != nil {
 		return err
 	}
-	if exist {
+	if exists {
 		return fmt.Errorf("wrong-pass")
 	} else {
 		return fmt.Errorf("no-email")
 	}
 }
 
-func (u *User) Exists(conn *sql.DB) (bool, error) {
+func (u *User) Delete() error {
+	conn, err := db.GetDatabase()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	s := `DELETE FROM usr WHERE pk=$1`
+	_, err = conn.Exec(s, u.Pk)
+	if err != nil {
+		return err
+	}
+	u = &User{}
+	return nil
+}
+
+func (u *User) exists(conn *sql.DB) (bool, error) {
+	if u.Email != "" {
+		return false, fmt.Errorf("empty")
+	}
 	s := `SELECT pk FROM usr WHERE email=$1`
 	rows, err := conn.Query(s, u.Email, u.Pass)
 	if err != nil {
@@ -89,16 +133,10 @@ func (u *User) Exists(conn *sql.DB) (bool, error) {
 	return rows.Next(), nil
 }
 
-func (u *User) Delete(conn *sql.DB) error {
-	s := `DELETE FROM usr WHERE pk=$1`
-	_, err := conn.Exec(s, u.Pk)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (u *User) loginstamp(conn *sql.DB) error {
+	if &u.Pk == nil {
+		return fmt.Errorf("empty pk")
+	}
 	s := `UPDATE usr WHERE pk=$1 SET login_at=$2`
 	now := time.Now()
 	_, err := conn.Exec(s, u.Pk, now)
