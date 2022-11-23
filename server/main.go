@@ -56,7 +56,7 @@ func handleDayKyoki(w http.ResponseWriter, r *http.Request) {
 func loadEnv() {
 	if !appengine.IsAppEngine() {
 		currentDir, _ := os.Getwd()
-		envPath := strings.ReplaceAll(filepath.Join(currentDir, "db/config/.env"), "\\", "/")
+		envPath := strings.ReplaceAll(filepath.Join(currentDir, ".env"), "\\", "/")
 		err := godotenv.Load(envPath)
 		if err != nil {
 			log.Fatalf("Error loading .env file")
