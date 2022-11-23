@@ -36,7 +36,7 @@ func (u *User) Create() error {
 	if exists {
 		return fmt.Errorf("%s is exists", u.Email)
 	}
-	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4) RETURNING id`
+	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4) RETURNING pk`
 	u.Id = newId()
 	var pk int64
 	err = conn.QueryRow(s, u.Id, u.Id, u.Email, u.Pass).Scan(&pk)
@@ -104,13 +104,16 @@ func (u *User) Get() error {
 }
 
 func (u *User) Delete() error {
+	if u.Pk == 0 || u.Email == "" {
+		return fmt.Errorf("no pk or email")
+	}
 	conn, err := db.GetDatabase()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
-	s := `DELETE FROM usr WHERE pk=$1`
-	_, err = conn.Exec(s, u.Pk)
+	s := `DELETE FROM usr WHERE pk=$1 or email=$2`
+	_, err = conn.Exec(s, u.Pk, u.Email)
 	if err != nil {
 		return err
 	}
