@@ -34,7 +34,7 @@ func (u *User) Create() error {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("$s is exists", u.Email)
+		return fmt.Errorf("%s is exists", u.Email)
 	}
 	s := `INSERT INTO usr (id, name, email, pass) VALUES($1, $2, $3, $4)`
 	u.Id = newId()
@@ -117,7 +117,7 @@ func (u *User) Delete() error {
 	if err != nil {
 		return err
 	}
-	u = &User{}
+	u = &User{Pk: 0, Email: "", Pass: ""}
 	return nil
 }
 
@@ -134,7 +134,7 @@ func (u *User) exists(conn *sql.DB) (bool, error) {
 }
 
 func (u *User) loginstamp(conn *sql.DB) error {
-	if &u.Pk == nil {
+	if u.Pk == 0 {
 		return fmt.Errorf("empty pk")
 	}
 	s := `UPDATE usr WHERE pk=$1 SET login_at=$2`
