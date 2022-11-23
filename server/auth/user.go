@@ -21,8 +21,8 @@ type User struct {
 }
 
 func (u *User) Create() error {
-	if u.Pass != "" || u.Email != "" {
-		return fmt.Errorf("empty")
+	if u.Pass == "" || u.Email == "" {
+		return fmt.Errorf("empty pass or email")
 	}
 	conn, err := db.GetDatabase()
 	if err != nil {
