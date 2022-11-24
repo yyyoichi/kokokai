@@ -16,12 +16,13 @@ func NewJwtToken(secret string) *JwtToken {
 }
 
 type myClaims struct {
-	User *User `json:"user"`
+	Id   string `json:"id"`
+	Name string `json:"name"`
 	jwt.RegisteredClaims
 }
 
 func (jt *JwtToken) Generate(u *User) (*string, error) {
-	mc := &myClaims{User: u}
+	mc := &myClaims{Id: u.Id, Name: u.Name}
 	mc.ExpiresAt = jwt.NewNumericDate(time.Now().AddDate(0, 0, 1))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mc)
 	tokenString, err := token.SignedString([]byte(jt.secret))
@@ -31,7 +32,7 @@ func (jt *JwtToken) Generate(u *User) (*string, error) {
 	return &tokenString, nil
 }
 
-func (jt *JwtToken) ParseToken(tokenString string) error {
+func (jt *JwtToken) ParseToken(tokenString string) (*string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &myClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -39,12 +40,12 @@ func (jt *JwtToken) ParseToken(tokenString string) error {
 		return []byte(jt.secret), nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if _, ok := token.Claims.(*myClaims); ok && token.Valid {
-		return nil
+	if mc, ok := token.Claims.(*myClaims); ok && token.Valid {
+		return &mc.Id, nil
 	} else {
-		return errors.New("invalid")
+		return nil, errors.New("invalid")
 	}
 }
