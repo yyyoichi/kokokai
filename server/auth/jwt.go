@@ -21,8 +21,8 @@ type myClaims struct {
 	jwt.RegisteredClaims
 }
 
-func (jt *JwtToken) Generate(u *User) (*string, error) {
-	mc := &myClaims{Id: u.Id, Name: u.Name}
+func (jt *JwtToken) Generate(id, name string) (*string, error) {
+	mc := &myClaims{Id: id, Name: name}
 	mc.ExpiresAt = jwt.NewNumericDate(time.Now().AddDate(0, 0, 1))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mc)
 	tokenString, err := token.SignedString([]byte(jt.secret))

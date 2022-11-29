@@ -7,8 +7,7 @@ import (
 func TestJWTToken(t *testing.T) {
 	secret := "secret!!00"
 	j := NewJwtToken(secret)
-	u := &User{Id: "xxxyyyzzz", Name: "yyyoichi", Email: "yyyoichi@example.com"}
-	tokenString, err := j.Generate(u)
+	tokenString, err := j.Generate("xxxyyyzzz", "yyyoichi")
 	if err != nil {
 		t.Error(err)
 	}
@@ -16,15 +15,15 @@ func TestJWTToken(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if *id != u.Id {
-		t.Errorf("expected: %s, got=%s", u.Id, *id)
+	if *id != "xxxyyyzzz" {
+		t.Errorf("expected: 'xxxyyyzzz', got=%s", *id)
 	}
 }
 
 func TestInvalidToken(t *testing.T) {
 	secret := "secret!!00"
 	j := NewJwtToken(secret)
-	tokenString, err := j.Generate(&User{Name: "yyyoichi", Email: "yyyoichi@example.com"})
+	tokenString, err := j.Generate("xxxyyyzzz", "yyyoichi")
 	if err != nil {
 		t.Error(err)
 	}

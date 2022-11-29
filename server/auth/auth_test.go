@@ -6,10 +6,9 @@ import (
 )
 
 func TestAuthCheck(t *testing.T) {
-	u := &User{Id: "test1", Name: "yyyoichi"}
 	secret := os.Getenv("SECRET")
 	jt := NewJwtToken(secret)
-	tokenString, err := jt.Generate(u)
+	tokenString, err := jt.Generate("test1", "yyyoichi")
 	if err != nil {
 		t.Error(err)
 	}
