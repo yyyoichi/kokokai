@@ -57,7 +57,40 @@ func newId() string {
 	return b.String()
 }
 
-func (u *User) Get() error {
+// IDから取得
+func (u *User) GetById() error {
+	if u.Id == "" {
+		return fmt.Errorf("empty id")
+	}
+	conn, err := db.GetDatabase()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	// この辺どうにかしたい
+	var pk sql.NullInt64
+	var id sql.NullString
+	var name sql.NullString
+	var email sql.NullString
+	var pass sql.NullString
+	var loginAt sql.NullTime
+	var updateAt sql.NullTime
+	var createAt sql.NullTime
+	s := `SELECT * FROM usr WHERE id=$1`
+	err = conn.QueryRow(s, u.Id).Scan(&pk, &id, &name, &email, &pass, &loginAt, &updateAt, &createAt)
+	if err != nil {
+		return err
+	}
+	u.Pk, u.Id, u.Name, u.Email, u.Pass = db.N2i(pk), db.N2s(id), db.N2s(name), db.N2s(email), db.N2s(pass)
+	u.LoginAt, u.UpdateAt, u.CreateAt = db.N2t(loginAt), db.N2t(updateAt), db.N2t(createAt)
+	if u.loginstamp(conn) != nil {
+		return err
+	}
+	return nil
+}
+
+// パスワード確認後取得
+func (u *User) GetByPass() error {
 	if u.Pass == "" {
 		return fmt.Errorf("empty password")
 	}

@@ -38,7 +38,7 @@ func TestCreateUser(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	testLoadEnv()
 	u := &User{Email: "yyyoichi@example.com", Pass: "pa55w0rd"}
-	err := u.Get()
+	err := u.GetByPass()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -47,7 +47,7 @@ func TestGetUser(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	testLoadEnv()
 	u := &User{Email: "yyyoichi@example.com", Pass: "pa55w0rd"}
-	err := u.Get()
+	err := u.GetByPass()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -56,7 +56,7 @@ func TestDeleteUser(t *testing.T) {
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	err = u.Get()
+	err = u.GetByPass()
 	if err != nil {
 		t.Logf(err.Error())
 	} else {
