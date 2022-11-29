@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 
 func testLoadEnv() {
 	currentDir, _ := os.Getwd()
-	envPath := strings.ReplaceAll(filepath.Join(currentDir, "../.env"), "\\", "/")
+	envPath := strings.ReplaceAll(filepath.Join(currentDir, "../../.env"), "\\", "/")
 	err := godotenv.Load(envPath)
 	if err != nil {
 		fmt.Println("Error loading .env file")
