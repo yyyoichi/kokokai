@@ -9,7 +9,7 @@ type Auth struct {
 	UserId string
 }
 
-func New() *Auth {
+func NewAuth() *Auth {
 	return &Auth{}
 }
 
