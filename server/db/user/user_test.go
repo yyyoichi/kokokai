@@ -63,3 +63,34 @@ func TestDeleteUser(t *testing.T) {
 		t.Errorf("exits")
 	}
 }
+
+func userEcosystem(u *User, t *testing.T) func() {
+	err := u.Create()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	if u.Pk == 0 {
+		t.Error("Pk is 0.")
+	}
+	if u.Id == "" {
+		t.Error("Id is empty")
+	}
+	return func() {
+		u.Delete()
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+	}
+}
+
+func TestGetById(t *testing.T) {
+	testLoadEnv()
+	u := &User{Email: "yyyoichi@example.com", Pass: "pa55w0rd"}
+	delete := userEcosystem(u, t)
+	defer delete()
+	u.Name = ""
+	u.GetById()
+	if u.Name == "" {
+		t.Errorf("expeced some string, got=''")
+	}
+}
