@@ -100,7 +100,12 @@ func TestSignUp(t *testing.T) {
 	loadEnv()
 	u := user.User{Id: "o123456789o123456788", Pass: "pa55Ward"}
 	defer u.Delete()
-	reqBody := bytes.NewBufferString(fmt.Sprintf(`{"id":"%s","pass1":"%s", "pass2":"%s"}`, u.Id, u.Pass, u.Pass))
+	bodyBuf := fmt.Sprintf(`{"id":"%s","pass1":"%s", "pass2":"%s"}`, u.Id, u.Pass, u.Pass)
+	testSignUpError(bodyBuf, "ok", t)
+}
+
+func testSignUpError(bodyBuf, expectedStatus string, t *testing.T) {
+	reqBody := bytes.NewBufferString(bodyBuf)
 	req := httptest.NewRequest(http.MethodPost, "http://localhost:3000/signup", reqBody)
 
 	got := httptest.NewRecorder()
@@ -110,10 +115,7 @@ func TestSignUp(t *testing.T) {
 	if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
 		t.Error(err)
 	}
-	t.Log(lr.Status)
-	if lr.Status != "ok" {
-		t.Errorf("response excepted ok, but got=%s", lr.Status)
-	} else {
-		t.Logf("token=%s", lr.Token)
+	if lr.Status != expectedStatus {
+		t.Errorf("response excepted %s, but got=%s", expectedStatus, lr.Status)
 	}
 }

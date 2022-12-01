@@ -22,6 +22,7 @@ func handler() {
 	http.HandleFunc("/", handle.Index)
 	http.HandleFunc("/daykyoki", handle.DayKyoki)
 	http.HandleFunc("/login", handle.LoginFunc)
+	http.HandleFunc("/signup", handle.SignUpFunc)
 }
 
 func loadEnv() {
