@@ -43,6 +43,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLoginEmpty(t *testing.T) {
+	loadEnv()
 	test := []struct {
 		buf            string
 		expectedStatus string
@@ -58,6 +59,10 @@ func TestLoginEmpty(t *testing.T) {
 		{
 			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "", ""),
 			"id を入力してください。パスワードを入力してください。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "zzzyyyxxx", "pass"),
+			"idが見つかりません。",
 		},
 	}
 	for _, tt := range test {
