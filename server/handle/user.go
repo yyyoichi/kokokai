@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"kokokai/server/auth"
 	"kokokai/server/db/user"
 	"net/http"
@@ -90,22 +91,83 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 		}
 		// DBから取得正常
 		// jwt作成
-		secret := os.Getenv("SECRET")
-		j := auth.NewJwtToken(secret)
-		tokenString, err := j.Generate(user.Id, user.Name)
-		if err != nil {
-			res := Response{err.Error()}
+		res := LoginResponse{Status: "ok"}
+		res.resWithJWT(w, user)
+	default:
+		res := Response{"permits only POST"}
+		res.resError(&w)
+		return
+	}
+}
+
+type SignUp struct {
+	Id    string `validate:"required,len=20"`
+	Pass1 string `validate:"required,alphanum"`
+	Pass2 string `validate:"required,eqfield=SignUp.Pass1"`
+}
+
+func SignUpFunc(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	switch r.Method {
+	case http.MethodPost:
+		var su SignUp
+		if err := json.NewDecoder(r.Body).Decode(&su); err != nil {
+			res := &Response{"need id and pass field"}
 			res.resError(&w)
 			return
 		}
-		res := &LoginResponse{"ok", *tokenString}
-		json, err := json.Marshal(res)
-		if err != nil {
-			res := Response{err.Error()}
+
+		validate := validator.New()
+		if err := validate.Struct(su); err != nil {
+			var out bytes.Buffer
+			var ve validator.ValidationErrors
+			if errors.As(err, &ve) {
+				for _, fe := range ve {
+					switch fe.Field() {
+					case "Id":
+						if fe.Tag() == "len" {
+							out.WriteString("20字以上で入力してください。")
+						} else {
+							out.WriteString("id を入力してください。")
+						}
+					case "Pass1":
+						if fe.Tag() == "alphanum" {
+							out.WriteString("id は英数字である必要があります。")
+						} else {
+							out.WriteString("パスワードを入力してください。")
+						}
+					case "Pass2":
+						if fe.Tag() == "eqfield" {
+							out.WriteString("パスワードが一致しません。")
+						} else {
+							out.WriteString("確認用のパスワードを入力してください。")
+						}
+					}
+				}
+			}
+			res := &Response{out.String()}
 			res.resError(&w)
 			return
 		}
-		w.Write(json)
+		// バリデーションチェック完了。入力正常。
+		// ユーザ作成
+		user := &user.User{Id: su.Id, Pass: su.Pass1}
+		if err := user.Create(); err != nil {
+			var out bytes.Buffer
+			switch err.Error() {
+			case fmt.Sprintf("%s is exists", user.Id):
+				out.WriteString("すでにidが存在しています。")
+			default:
+				out.WriteString("予期せぬエラーが発生しました。")
+			}
+			res := Response{out.String()}
+			res.resError(&w)
+			return
+		}
+		// DBに新しいユーザを作成完了
+		// jwt作成
+		res := LoginResponse{Status: "ok"}
+		res.resWithJWT(w, user)
 	default:
 		res := Response{"permits only POST"}
 		res.resError(&w)
