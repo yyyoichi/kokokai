@@ -41,3 +41,38 @@ func TestLogin(t *testing.T) {
 		t.Logf("token=%s", lr.Token)
 	}
 }
+
+func TestLoginEmpty(t *testing.T) {
+	test := []struct {
+		buf            string
+		expectedStatus string
+	}{
+		{
+			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "", "demopass"),
+			"id を入力してください。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "demoid", ""),
+			"パスワードを入力してください。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "", ""),
+			"id を入力してください。パスワードを入力してください。",
+		},
+	}
+	for _, tt := range test {
+		reqBody := bytes.NewBufferString(tt.buf)
+		req := httptest.NewRequest(http.MethodPost, "http://localhost:3000/login", reqBody)
+
+		got := httptest.NewRecorder()
+		LoginFunc(got, req)
+
+		var lr LoginResponse
+		if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
+			t.Error(err)
+		}
+		if lr.Status != tt.expectedStatus {
+			t.Errorf("expect err '%s' but got=%s", tt.expectedStatus, lr.Status)
+		}
+	}
+}
