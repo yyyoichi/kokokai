@@ -104,6 +104,56 @@ func TestSignUp(t *testing.T) {
 	testSignUpError(bodyBuf, "ok", t)
 }
 
+func TestSignUpError(t *testing.T) {
+	loadEnv()
+	normId := "o123456789o123456789"
+	normPass := "pa55w0rd"
+	test := []struct {
+		buf            string
+		expectedStatus string
+	}{
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, "abc3", normPass, normPass),
+			"idは20字で入力してください。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, "", normPass, normPass),
+			"id を入力してください。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, normId, "normPasspass", "normPasspass"),
+			"パスワードは英数字である必要があります。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, normId, "012345678", "012345678"),
+			"パスワードは英数字である必要があります。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, normId, "pass1", "pass1"),
+			"パスワードは8~24字である必要があります。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, normId, "normPassnormPassnormPass123456", "normPassnormPassnormPass123456"),
+			"パスワードは8~24字である必要があります。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, normId, "", ""),
+			"パスワードを入力してください。確認用のパスワードを入力してください。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, normId, normPass, "normPass"),
+			"パスワードが一致しません。",
+		},
+		{
+			fmt.Sprintf(`{"id":"%s","pass1":"%s","pass2":"%s"}`, normId, normPass, ""),
+			"確認用のパスワードを入力してください。",
+		},
+	}
+	for _, tt := range test {
+		testSignUpError(tt.buf, tt.expectedStatus, t)
+	}
+}
+
 func testSignUpError(bodyBuf, expectedStatus string, t *testing.T) {
 	reqBody := bytes.NewBufferString(bodyBuf)
 	req := httptest.NewRequest(http.MethodPost, "http://localhost:3000/signup", reqBody)
