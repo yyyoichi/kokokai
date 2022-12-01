@@ -103,7 +103,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 type SignUp struct {
 	Id    string `validate:"required,len=20"`
 	Pass1 string `validate:"required,alphanum"`
-	Pass2 string `validate:"required,eqfield=SignUp.Pass1"`
+	Pass2 string `validate:"required,eqfield=Pass1"`
 }
 
 func SignUpFunc(w http.ResponseWriter, r *http.Request) {
