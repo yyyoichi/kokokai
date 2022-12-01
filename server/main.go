@@ -14,9 +14,14 @@ import (
 
 func main() {
 	loadEnv()
+	handler()
+	appengine.Main()
+}
+
+func handler() {
 	http.HandleFunc("/", handle.Index)
 	http.HandleFunc("/daykyoki", handle.DayKyoki)
-	appengine.Main()
+	http.HandleFunc("/login", handle.LoginFunc)
 }
 
 func loadEnv() {
