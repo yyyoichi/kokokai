@@ -66,18 +66,32 @@ func TestLoginEmpty(t *testing.T) {
 		},
 	}
 	for _, tt := range test {
-		reqBody := bytes.NewBufferString(tt.buf)
-		req := httptest.NewRequest(http.MethodPost, "http://localhost:3000/login", reqBody)
+		testLoginError(tt.buf, tt.expectedStatus, t)
+	}
+}
 
-		got := httptest.NewRecorder()
-		LoginFunc(got, req)
+func TestInvalidPassLogin(t *testing.T) {
+	loadEnv()
+	u := &user.User{Id: "temUser", Pass: "AAA"}
+	u.Create()
+	defer u.Delete()
+	bodyBuf := fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "temUser", "BBB")
+	expectedStatus := "パスワードが違います。"
+	testLoginError(bodyBuf, expectedStatus, t)
+}
 
-		var lr LoginResponse
-		if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
-			t.Error(err)
-		}
-		if lr.Status != tt.expectedStatus {
-			t.Errorf("expect err '%s' but got=%s", tt.expectedStatus, lr.Status)
-		}
+func testLoginError(bodyBuf, expectedStatus string, t *testing.T) {
+	reqBody := bytes.NewBufferString(bodyBuf)
+	req := httptest.NewRequest(http.MethodPost, "http://localhost:3000/login", reqBody)
+
+	got := httptest.NewRecorder()
+	LoginFunc(got, req)
+
+	var lr LoginResponse
+	if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
+		t.Error(err)
+	}
+	if lr.Status != expectedStatus {
+		t.Errorf("expect err '%s' but got=%s", expectedStatus, lr.Status)
 	}
 }
