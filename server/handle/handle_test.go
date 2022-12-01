@@ -23,6 +23,7 @@ func TestLogin(t *testing.T) {
 	loadEnv()
 	u := user.User{Id: "yyyoichi", Pass: "pa55W@rd"}
 	u.Create()
+	defer u.Delete()
 	reqBody := bytes.NewBufferString(fmt.Sprintf(`{"id":"%s","pass":"%s"}`, u.Id, u.Pass))
 	req := httptest.NewRequest(http.MethodPost, "http://localhost:3000/login", reqBody)
 
