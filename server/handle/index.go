@@ -12,7 +12,7 @@ type Response struct {
 	Status string `json:"status"`
 }
 
-func (res *Response) resError(w *http.ResponseWriter) {
+func (res *Response) Error(w *http.ResponseWriter) {
 	json, err := json.Marshal(res)
 	if err != nil {
 		http.Error(*w, err.Error(), http.StatusInternalServerError)

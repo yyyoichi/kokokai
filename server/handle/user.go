@@ -31,14 +31,14 @@ func (lr *LoginResponse) resWithJWT(w http.ResponseWriter, user *user.User) {
 	tokenString, err := j.Generate(user.Id, user.Name)
 	if err != nil {
 		res := Response{err.Error()}
-		res.resError(&w)
+		res.Error(&w)
 		return
 	}
 	lr.Token = *tokenString
 	resJson, err := json.Marshal(lr)
 	if err != nil {
 		res := Response{err.Error()}
-		res.resError(&w)
+		res.Error(&w)
 		return
 	}
 	w.Write(resJson)
@@ -51,7 +51,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 		var l Login
 		if err := json.NewDecoder(r.Body).Decode(&l); err != nil {
 			res := &Response{"need id and pass field"}
-			res.resError(&w)
+			res.Error(&w)
 			return
 		}
 
@@ -70,7 +70,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			res := &Response{out.String()}
-			res.resError(&w)
+			res.Error(&w)
 			return
 		}
 		// 入力値正常
@@ -86,7 +86,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 				out.WriteString(err.Error())
 			}
 			res := Response{out.String()}
-			res.resError(&w)
+			res.Error(&w)
 			return
 		}
 		// DBから取得正常
@@ -95,7 +95,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 		res.resWithJWT(w, user)
 	default:
 		res := Response{"permits only POST"}
-		res.resError(&w)
+		res.Error(&w)
 		return
 	}
 }
@@ -113,7 +113,7 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 		var su SignUp
 		if err := json.NewDecoder(r.Body).Decode(&su); err != nil {
 			res := &Response{"need id and pass field"}
-			res.resError(&w)
+			res.Error(&w)
 			return
 		}
 
@@ -149,7 +149,7 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			res := &Response{out.String()}
-			res.resError(&w)
+			res.Error(&w)
 			return
 		}
 		// バリデーションチェック完了。入力正常。
@@ -164,7 +164,7 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 				out.WriteString("予期せぬエラーが発生しました。")
 			}
 			res := Response{out.String()}
-			res.resError(&w)
+			res.Error(&w)
 			return
 		}
 		// DBに新しいユーザを作成完了
@@ -173,7 +173,7 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 		res.resWithJWT(w, user)
 	default:
 		res := Response{"permits only POST"}
-		res.resError(&w)
+		res.Error(&w)
 		return
 	}
 }
