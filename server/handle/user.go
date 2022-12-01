@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"kokokai/server/auth"
 	"kokokai/server/db/user"
 	"net/http"
@@ -29,7 +28,8 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		var l Login
 		if err := json.NewDecoder(r.Body).Decode(&l); err != nil {
-			http.Error(w, fmt.Sprintf(`{"status":"%s"}`, err), http.StatusInternalServerError)
+			res := &Response{"need id and pass field"}
+			res.resError(&w)
 			return
 		}
 
@@ -47,26 +47,25 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			res := &LoginResponse{Status: out.String()}
-			json, err := json.Marshal(res)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			http.Error(w, string(json), http.StatusBadRequest)
+			res := &Response{out.String()}
+			res.resError(&w)
 			return
 		}
 		// 入力値正常
 		user := &user.User{Id: l.Id, Pass: l.Pass}
 		if err := user.GetByPass(); err != nil {
+			var out bytes.Buffer
 			switch err.Error() {
 			case "wrong-pass":
-				http.Error(w, fmt.Sprintf(`{"status:":"%s"}`, "パスワードが違います。"), http.StatusBadRequest)
-				return
+				out.WriteString("パスワードが違います。")
 			case "no-id":
-				http.Error(w, fmt.Sprintf(`{"status:":"%s"}`, "Id。"), http.StatusBadRequest)
-				return
+				out.WriteString("idが見つかりません。")
+			default:
+				out.WriteString(err.Error())
 			}
+			res := Response{out.String()}
+			res.resError(&w)
+			return
 		}
 		// DBから取得正常
 		// jwt作成
@@ -74,16 +73,21 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 		j := auth.NewJwtToken(secret)
 		tokenString, err := j.Generate(user.Id, user.Name)
 		if err != nil {
-			http.Error(w, fmt.Sprintf(`{"status":"%s"}`, err), http.StatusInternalServerError)
+			res := Response{err.Error()}
+			res.resError(&w)
+			return
 		}
 		res := &LoginResponse{"ok", *tokenString}
 		json, err := json.Marshal(res)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			res := Response{err.Error()}
+			res.resError(&w)
 			return
 		}
 		w.Write(json)
 	default:
-		http.Error(w, `{"status":"permits only POST"}`, http.StatusMethodNotAllowed)
+		res := Response{"permits only POST"}
+		res.resError(&w)
+		return
 	}
 }
