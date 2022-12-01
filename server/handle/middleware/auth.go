@@ -4,6 +4,8 @@ import (
 	"kokokai/server/auth"
 	"kokokai/server/handle"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func MiddlewareAuth(next http.Handler) http.Handler {
@@ -21,5 +23,16 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 			res.Error(&w)
 			return
 		}
+		// 認証成功
+		vars := mux.Vars(r)
+		if vars["userId"] != "" {
+			// ログインユーザとリクエスト対象のユーザが一致しない。
+			if vars["userId"] != a.UserId {
+				res := handle.Response{Status: "不正な操作です。ログインし直してください。"}
+				res.Error(&w)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
 	})
 }
