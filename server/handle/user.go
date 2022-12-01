@@ -47,7 +47,13 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			http.Error(w, fmt.Sprintf(`{"status:":"%s"}`, out.String()), http.StatusBadRequest)
+			res := &LoginResponse{Status: out.String()}
+			json, err := json.Marshal(res)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Error(w, string(json), http.StatusBadRequest)
 			return
 		}
 		// 入力値正常
