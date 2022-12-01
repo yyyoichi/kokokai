@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"kokokai/server/auth"
 	"kokokai/server/db/user"
 	"net/http"
+	"os"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -16,6 +18,11 @@ type Login struct {
 	Pass string `validate:"required"`
 }
 
+type LoginResponse struct {
+	Status string `json:"status"`
+	Token  string `json:"token"`
+}
+
 func LoginFunc(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	switch r.Method {
@@ -23,6 +30,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 		var l Login
 		if err := json.NewDecoder(r.Body).Decode(&l); err != nil {
 			http.Error(w, fmt.Sprintf(`{"status":"%s"}`, err), http.StatusInternalServerError)
+			return
 		}
 
 		validate := validator.New()
@@ -49,11 +57,27 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 			case "wrong-pass":
 				http.Error(w, fmt.Sprintf(`{"status:":"%s"}`, "パスワードが違います。"), http.StatusBadRequest)
 				return
-			case "no-email":
+			case "no-id":
 				http.Error(w, fmt.Sprintf(`{"status:":"%s"}`, "Id。"), http.StatusBadRequest)
 				return
 			}
 		}
-
+		// DBから取得正常
+		// jwt作成
+		secret := os.Getenv("SECRET")
+		j := auth.NewJwtToken(secret)
+		tokenString, err := j.Generate(user.Id, user.Name)
+		if err != nil {
+			http.Error(w, fmt.Sprintf(`{"status":"%s"}`, err), http.StatusInternalServerError)
+		}
+		res := &LoginResponse{"ok", *tokenString}
+		json, err := json.Marshal(res)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write(json)
+	default:
+		http.Error(w, `{"status":"permits only POST"}`, http.StatusMethodNotAllowed)
 	}
 }
