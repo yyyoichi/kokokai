@@ -102,7 +102,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 
 type SignUp struct {
 	Id    string `validate:"required,len=20"`
-	Pass1 string `validate:"required,alphanum"`
+	Pass1 string `validate:"required,alphanum,min=8,max=24"`
 	Pass2 string `validate:"required,eqfield=Pass1"`
 }
 
@@ -126,13 +126,15 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 					switch fe.Field() {
 					case "Id":
 						if fe.Tag() == "len" {
-							out.WriteString("20字以上で入力してください。")
+							out.WriteString("idは20字で入力してください。")
 						} else {
 							out.WriteString("id を入力してください。")
 						}
 					case "Pass1":
 						if fe.Tag() == "alphanum" {
 							out.WriteString("id は英数字である必要があります。")
+						} else if fe.Tag() == "min" || fe.Tag() == "max" {
+							out.WriteString("id は8~24字である必要があります。")
 						} else {
 							out.WriteString("パスワードを入力してください。")
 						}
