@@ -177,3 +177,59 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+type UserPatch struct {
+	Name  string `validate:"max=20"`
+	Email string `validate:"email,max=50"`
+}
+
+func UserFunc(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	switch r.Method {
+	case http.MethodPatch:
+		var up UserPatch
+		if err := json.NewDecoder(r.Body).Decode(&up); err != nil {
+			res := &Response{"need name and email field"}
+			res.Error(&w)
+			return
+		}
+
+		validate := validator.New()
+		if err := validate.Struct(up); err != nil {
+			var out bytes.Buffer
+			var ve validator.ValidationErrors
+			if errors.As(err, &ve) {
+				for _, fe := range ve {
+					switch fe.Field() {
+					case "name":
+						out.WriteString("名前は20字以内で入力してください。")
+					case "email":
+						if fe.Tag() == "email" {
+							out.WriteString("有効なEmailを入力してください。")
+						} else if fe.Tag() == "max" {
+							out.WriteString("Emailは50字以内で入力してください。")
+						}
+					}
+				}
+			}
+			res := &Response{out.String()}
+			res.Error(&w)
+			return
+		}
+		// バリデーションチェック完了。入力正常。
+		// ユーザ情報アップデート
+		//
+		res := Response{Status: "ok"}
+		resJson, err := json.Marshal(res)
+		if err != nil {
+			res := Response{err.Error()}
+			res.Error(&w)
+			return
+		}
+		w.Write(resJson)
+	default:
+		res := Response{"permits only MethodPatch"}
+		res.Error(&w)
+		return
+	}
+}
