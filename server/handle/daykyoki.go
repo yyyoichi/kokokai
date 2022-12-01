@@ -15,13 +15,13 @@ func DayKyoki(w http.ResponseWriter, r *http.Request) {
 	regex := regexp.MustCompile(`[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])`)
 	if !regex.MatchString(dateString) {
 		w.WriteHeader(404)
-		json.NewEncoder(w).Encode(Response{Status: "Bad Request", Message: "No date"})
+		json.NewEncoder(w).Encode(Response{Status: "Bad Request"})
 		return
 	}
 	connection, err := db.GetDatabase()
 	if err != nil {
 		w.WriteHeader(501)
-		json.NewEncoder(w).Encode(Response{Status: "Service Unavailable", Message: "unconnect db"})
+		json.NewEncoder(w).Encode(Response{Status: "Service Unavailable"})
 		return
 	}
 	defer connection.Close()
