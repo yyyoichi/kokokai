@@ -132,9 +132,9 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 						}
 					case "Pass1":
 						if fe.Tag() == "alphanum" {
-							out.WriteString("id は英数字である必要があります。")
+							out.WriteString("パスワードは英数字である必要があります。")
 						} else if fe.Tag() == "min" || fe.Tag() == "max" {
-							out.WriteString("id は8~24字である必要があります。")
+							out.WriteString("パスワードは8~24字である必要があります。")
 						} else {
 							out.WriteString("パスワードを入力してください。")
 						}
