@@ -64,7 +64,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 }
 
-func userEcosystem(u *User, t *testing.T) func() {
+func UserEcosystem(u *User, t *testing.T) func() {
 	err := u.Create()
 	if err != nil {
 		t.Errorf(err.Error())
@@ -86,7 +86,7 @@ func userEcosystem(u *User, t *testing.T) func() {
 func TestGetById(t *testing.T) {
 	testLoadEnv()
 	u := &User{Id: "yyyoichi", Pass: "pa55w0rd"}
-	delete := userEcosystem(u, t)
+	delete := UserEcosystem(u, t)
 	defer delete()
 	u.Name = ""
 	u.GetById()
