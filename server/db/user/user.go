@@ -37,7 +37,7 @@ func (u *User) Create() error {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("%s is exists", u.Email)
+		return fmt.Errorf("%s is exists", u.Id)
 	}
 	s := `INSERT INTO usr (id, name, pass) VALUES($1, $2, $3) RETURNING pk`
 	var pk int64
