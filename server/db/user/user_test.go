@@ -21,7 +21,7 @@ func testLoadEnv() {
 
 func TestCreateUser(t *testing.T) {
 	testLoadEnv()
-	u := &User{Email: "yyyoichi@example.com", Pass: "pa55w0rd"}
+	u := &User{Id: "yyyoichi", Pass: "pa55w0rd"}
 	err := u.Create()
 	if err != nil {
 		t.Errorf(err.Error())
@@ -37,7 +37,7 @@ func TestCreateUser(t *testing.T) {
 }
 func TestGetUser(t *testing.T) {
 	testLoadEnv()
-	u := &User{Email: "yyyoichi@example.com", Pass: "pa55w0rd"}
+	u := &User{Id: "yyyoichi", Pass: "pa55w0rd"}
 	err := u.GetByPass()
 	if err != nil {
 		t.Error(err.Error())
@@ -46,7 +46,7 @@ func TestGetUser(t *testing.T) {
 }
 func TestDeleteUser(t *testing.T) {
 	testLoadEnv()
-	u := &User{Email: "yyyoichi@example.com", Pass: "pa55w0rd"}
+	u := &User{Id: "yyyoichi", Pass: "pa55w0rd"}
 	err := u.GetByPass()
 	if err != nil {
 		t.Errorf(err.Error())
@@ -85,7 +85,7 @@ func userEcosystem(u *User, t *testing.T) func() {
 
 func TestGetById(t *testing.T) {
 	testLoadEnv()
-	u := &User{Email: "yyyoichi@example.com", Pass: "pa55w0rd"}
+	u := &User{Id: "yyyoichi", Pass: "pa55w0rd"}
 	delete := userEcosystem(u, t)
 	defer delete()
 	u.Name = ""
