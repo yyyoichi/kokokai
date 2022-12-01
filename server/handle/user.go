@@ -102,7 +102,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 
 type SignUp struct {
 	Id    string `validate:"required,len=20"`
-	Pass1 string `validate:"required,alphanum,min=8,max=24"`
+	Pass1 string `validate:"required,alphanumary,min=8,max=24"`
 	Pass2 string `validate:"required,eqfield=Pass1"`
 }
 
@@ -118,6 +118,7 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 		}
 
 		validate := validator.New()
+		validate.RegisterValidation("alphanumary", customAlphanumary)
 		if err := validate.Struct(su); err != nil {
 			var out bytes.Buffer
 			var ve validator.ValidationErrors
@@ -131,7 +132,7 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 							out.WriteString("id を入力してください。")
 						}
 					case "Pass1":
-						if fe.Tag() == "alphanum" {
+						if fe.Tag() == "alphanumary" {
 							out.WriteString("パスワードは英数字である必要があります。")
 						} else if fe.Tag() == "min" || fe.Tag() == "max" {
 							out.WriteString("パスワードは8~24字である必要があります。")
