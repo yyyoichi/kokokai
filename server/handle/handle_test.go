@@ -95,3 +95,25 @@ func testLoginError(bodyBuf, expectedStatus string, t *testing.T) {
 		t.Errorf("expect err '%s' but got=%s", expectedStatus, lr.Status)
 	}
 }
+
+func TestSignUp(t *testing.T) {
+	loadEnv()
+	u := user.User{Id: "o123456789o123456788", Pass: "pa55Ward"}
+	defer u.Delete()
+	reqBody := bytes.NewBufferString(fmt.Sprintf(`{"id":"%s","pass1":"%s", "pass2":"%s"}`, u.Id, u.Pass, u.Pass))
+	req := httptest.NewRequest(http.MethodPost, "http://localhost:3000/signup", reqBody)
+
+	got := httptest.NewRecorder()
+	SignUpFunc(got, req)
+
+	var lr LoginResponse
+	if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
+		t.Error(err)
+	}
+	t.Log(lr.Status)
+	if lr.Status != "ok" {
+		t.Errorf("response excepted ok, but got=%s", lr.Status)
+	} else {
+		t.Logf("token=%s", lr.Token)
+	}
+}
