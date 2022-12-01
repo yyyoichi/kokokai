@@ -22,6 +22,27 @@ type LoginResponse struct {
 	Token  string `json:"token"`
 }
 
+func (lr *LoginResponse) resWithJWT(w http.ResponseWriter, user *user.User) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	// jwt作成
+	secret := os.Getenv("SECRET")
+	j := auth.NewJwtToken(secret)
+	tokenString, err := j.Generate(user.Id, user.Name)
+	if err != nil {
+		res := Response{err.Error()}
+		res.resError(&w)
+		return
+	}
+	lr.Token = *tokenString
+	resJson, err := json.Marshal(lr)
+	if err != nil {
+		res := Response{err.Error()}
+		res.resError(&w)
+		return
+	}
+	w.Write(resJson)
+}
+
 func LoginFunc(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	switch r.Method {
