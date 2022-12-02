@@ -102,7 +102,7 @@ func TestUpdate(t *testing.T) {
 	defer delete()
 
 	u.Name = "updatename1"
-	if err := u.Update(); err != nil {
+	if err := u.Update([]ColumnName{NAME}); err != nil {
 		t.Error(err)
 	}
 	u.GetById()
@@ -112,7 +112,7 @@ func TestUpdate(t *testing.T) {
 
 	u.Name = "updatename2"
 	u.Email = "updateemail2"
-	if err := u.Update(); err != nil {
+	if err := u.Update([]ColumnName{NAME, EMAIL}); err != nil {
 		t.Error(err)
 	}
 	u.GetById()
@@ -125,14 +125,14 @@ func TestUpdate(t *testing.T) {
 
 	u.Name = ""
 	u.Email = ""
-	if err := u.Update(); err != nil {
+	if err := u.Update([]ColumnName{}); err != nil {
 		t.Error(err)
 	}
 	u.GetById()
-	if u.Name != "" {
-		t.Errorf("expeced ''. but got=%s", u.Name)
+	if u.Name != "updatename2" {
+		t.Errorf("expeced updatename2. but got=%s", u.Name)
 	}
-	if u.Email != "" {
-		t.Errorf("expeced ''. but got=%s", u.Email)
+	if u.Email != "updateemail2" {
+		t.Errorf("expeced updateemail2. but got=%s", u.Email)
 	}
 }
