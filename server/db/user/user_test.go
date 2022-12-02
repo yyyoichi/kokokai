@@ -94,3 +94,45 @@ func TestGetById(t *testing.T) {
 		t.Errorf("expeced some string, got=''")
 	}
 }
+
+func TestUpdate(t *testing.T) {
+	testLoadEnv()
+	u := &User{Id: "yyyoichi", Pass: "pa55w0rd"}
+	delete := UserEcosystem(u, t)
+	defer delete()
+
+	u.Name = "updatename1"
+	if err := u.Update(); err != nil {
+		t.Error(err)
+	}
+	u.GetById()
+	if u.Name != "updatename1" {
+		t.Errorf("expeced updatename1. but got=%s", u.Name)
+	}
+
+	u.Name = "updatename2"
+	u.Email = "updateemail2"
+	if err := u.Update(); err != nil {
+		t.Error(err)
+	}
+	u.GetById()
+	if u.Name != "updatename2" {
+		t.Errorf("expeced updatename2. but got=%s", u.Name)
+	}
+	if u.Email != "updateemail2" {
+		t.Errorf("expeced updateemail2. but got=%s", u.Email)
+	}
+
+	u.Name = ""
+	u.Email = ""
+	if err := u.Update(); err != nil {
+		t.Error(err)
+	}
+	u.GetById()
+	if u.Name != "" {
+		t.Errorf("expeced ''. but got=%s", u.Name)
+	}
+	if u.Email != "" {
+		t.Errorf("expeced ''. but got=%s", u.Email)
+	}
+}
