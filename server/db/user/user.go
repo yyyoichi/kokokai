@@ -150,27 +150,23 @@ func (u *User) Update() error {
 	// sql文
 	var s bytes.Buffer
 	now := time.Now()
-	ph = append(ph, u.Id, now)
-	s.WriteString("UPDATE usr WHERE id=$1 SET update_at=$2")
+	ph = append(ph, now)
+	s.WriteString("UPDATE usr SET update_at=$1")
 	us := []struct {
 		val    interface{}
 		column string
 	}{
-		{&u.Name, "name"},
-		{&u.Email, "email"},
+		{u.Name, "name"},
+		{u.Email, "email"},
 	}
 	for _, up := range us {
-		if up.val != nil {
-			ph = append(ph, up.val)
-			ss := fmt.Sprintf(", %s=$%d", up.column, len(ph))
-			s.WriteString(ss)
-		}
+		ph = append(ph, up.val)
+		s.WriteString(fmt.Sprintf(", %s=$%d", up.column, len(ph)))
 	}
-	if len(ph) == 2 {
-		// u.Idでupdate_atしか更新しない。
-		return nil
-	}
-	_, err = conn.Exec(s.String(), ph...)
+	ph = append(ph, u.Id)
+	s.WriteString(fmt.Sprintf(" WHERE id=$%d", len(ph)))
+	ss := s.String()
+	_, err = conn.Exec(ss, ph...)
 	if err != nil {
 		return err
 	}
