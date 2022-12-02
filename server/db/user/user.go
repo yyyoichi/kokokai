@@ -1,6 +1,7 @@
 package user
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"kokokai/server/db"
@@ -130,6 +131,50 @@ func (u *User) GetByPass() error {
 	if u.loginstamp(conn) != nil {
 		return err
 	}
+	return nil
+}
+
+// 認証済み
+func (u *User) Update() error {
+	if u.Id == "" {
+		return fmt.Errorf("empty id")
+	}
+	conn, err := db.GetDatabase()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	// プレスホルダー
+	var ph []interface{}
+	// sql文
+	var s bytes.Buffer
+	now := time.Now()
+	ph = append(ph, u.Id, now)
+	s.WriteString("UPDATE usr WHERE id=$1 SET update_at=$2")
+	us := []struct {
+		val    interface{}
+		column string
+	}{
+		{&u.Name, "name"},
+		{&u.Email, "email"},
+	}
+	for _, up := range us {
+		if up.val != nil {
+			ph = append(ph, up.val)
+			ss := fmt.Sprintf(", %s=$%d", up.column, len(ph))
+			s.WriteString(ss)
+		}
+	}
+	if len(ph) == 2 {
+		// u.Idでupdate_atしか更新しない。
+		return nil
+	}
+	_, err = conn.Exec(s.String(), ph...)
+	if err != nil {
+		return err
+	}
+	u.UpdateAt = now
 	return nil
 }
 
