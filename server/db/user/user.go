@@ -21,6 +21,42 @@ type User struct {
 	CreateAt time.Time
 }
 
+type ColumnName string
+
+const (
+	PK        ColumnName = "pk"
+	ID        ColumnName = "id"
+	NAME      ColumnName = "name"
+	EMAIL     ColumnName = "email"
+	PASS      ColumnName = "pass"
+	LOGIN_AT  ColumnName = "login_at"
+	UPDATE_AT ColumnName = "update_at"
+	CREATE_AT ColumnName = "create_at"
+)
+
+func (u *User) getField(cn ColumnName) interface{} {
+	switch cn {
+	case PK:
+		return u.Pk
+	case ID:
+		return u.Id
+	case NAME:
+		return u.Name
+	case EMAIL:
+		return u.Email
+	case PASS:
+		return u.Pass
+	case LOGIN_AT:
+		return u.LoginAt
+	case UPDATE_AT:
+		return u.UpdateAt
+	case CREATE_AT:
+		return u.CreateAt
+	default:
+		return nil
+	}
+}
+
 func (u *User) Create() error {
 	if u.Pass == "" {
 		return fmt.Errorf("empty pass")
@@ -135,7 +171,10 @@ func (u *User) GetByPass() error {
 }
 
 // 認証済み
-func (u *User) Update() error {
+func (u *User) Update(columns []ColumnName) error {
+	if len(columns) == 0 {
+		return nil
+	}
 	if u.Id == "" {
 		return fmt.Errorf("empty id")
 	}
@@ -152,16 +191,10 @@ func (u *User) Update() error {
 	now := time.Now()
 	ph = append(ph, now)
 	s.WriteString("UPDATE usr SET update_at=$1")
-	us := []struct {
-		val    interface{}
-		column string
-	}{
-		{u.Name, "name"},
-		{u.Email, "email"},
-	}
-	for _, up := range us {
-		ph = append(ph, up.val)
-		s.WriteString(fmt.Sprintf(", %s=$%d", up.column, len(ph)))
+	// アップデート対象
+	for _, cn := range columns {
+		ph = append(ph, u.getField(cn))
+		s.WriteString(fmt.Sprintf(", %s=$%d", cn, len(ph)))
 	}
 	ph = append(ph, u.Id)
 	s.WriteString(fmt.Sprintf(" WHERE id=$%d", len(ph)))
