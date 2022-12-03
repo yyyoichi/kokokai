@@ -28,7 +28,7 @@ func handler() {
 	r.HandleFunc("/signup", handle.SignUpFunc).Methods("POST")
 	u := r.PathPrefix("/users/").Subrouter()
 	u.Use(middleware.MiddlewareAuth)
-	u.HandleFunc("/{userId}", handle.UserFunc) //.Methods("PATCH")
+	u.HandleFunc("/{userId}", handle.UserFunc).Methods("PATCH")
 
 	http.Handle("/", r)
 }
