@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 )
 
 type Login struct {
@@ -179,8 +180,8 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 type UserPatch struct {
-	Name  string `validate:"max=20"`
-	Email string `validate:"email,max=50"`
+	Name  *string `validate:"max=20"`
+	Email *string `validate:"email,max=50"`
 }
 
 func UserFunc(w http.ResponseWriter, r *http.Request) {
@@ -218,7 +219,23 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 		}
 		// バリデーションチェック完了。入力正常。
 		// ユーザ情報アップデート
-		//
+		vars := mux.Vars(r)
+		userId := vars["userId"]
+		u := user.User{Id: userId}
+		updateColumn := make([]user.ColumnName, 0)
+		if up.Name != nil {
+			u.Name = *up.Name
+			updateColumn = append(updateColumn, user.ColumnName("name"))
+		}
+		if up.Email != nil {
+			u.Email = *up.Email
+			updateColumn = append(updateColumn, user.ColumnName("email"))
+		}
+		if err := u.Update(updateColumn); err != nil {
+			res := Response{err.Error()}
+			res.Error(&w)
+			return
+		}
 		res := Response{Status: "ok"}
 		resJson, err := json.Marshal(res)
 		if err != nil {
