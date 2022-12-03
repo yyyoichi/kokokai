@@ -4,6 +4,7 @@ import (
 	"kokokai/server/handle"
 	"kokokai/server/handle/middleware"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +28,9 @@ func handler() {
 	r.HandleFunc("/signup", handle.SignUpFunc).Methods("POST")
 	u := r.PathPrefix("/users/").Subrouter()
 	u.Use(middleware.MiddlewareAuth)
-	u.HandleFunc("/users/{userId}", handle.UserFunc).Methods("PATCH")
+	u.HandleFunc("/{userId}", handle.UserFunc) //.Methods("PATCH")
+
+	http.Handle("/", r)
 }
 
 func loadEnv() {
