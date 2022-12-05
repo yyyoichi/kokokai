@@ -3,6 +3,7 @@ package middleware
 import (
 	"kokokai/server/auth"
 	"kokokai/server/handle"
+	ctx "kokokai/server/handle/context"
 	"net/http"
 	"os"
 	"strings"
@@ -34,6 +35,8 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 			res.Error(&w)
 			return
 		}
+		// context にユーザ情報格納
+		userCxt := ctx.NewUserContext(r.Context(), mc)
 		// 認証成功
 		vars := mux.Vars(r)
 		if vars["userId"] != "" {
@@ -44,6 +47,6 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 				return
 			}
 		}
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(userCxt))
 	})
 }
