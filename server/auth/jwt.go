@@ -49,3 +49,13 @@ func (jt *JwtToken) ParseToken(tokenString string) (*MyClaims, error) {
 		return nil, errors.New("invalid")
 	}
 }
+
+func (jt *JwtToken) UpdateName(mc *MyClaims, name string) (*string, error) {
+	mc.Name = name
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mc)
+	tokenString, err := token.SignedString([]byte(jt.secret))
+	if err != nil {
+		return nil, err
+	}
+	return &tokenString, nil
+}
