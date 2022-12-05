@@ -224,7 +224,24 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 			res.Error(&w)
 			return
 		}
-		res := Response{Status: "ok"}
+		// トークン情報をアップデートする
+		mc, ok := ctx.FromUserContext(r.Context())
+		if !ok {
+			res := Response{Status: "予期せぬエラーが発生しました。"}
+			res.Error(&w)
+			return
+		}
+		secret := os.Getenv("SECRET")
+		jt := auth.NewJwtToken(secret)
+		tokenString, err := jt.UpdateName(mc, u.Name)
+		if err != nil {
+			if !ok {
+				res := Response{Status: err.Error()}
+				res.Error(&w)
+				return
+			}
+		}
+		res := LoginResponse{Status: "ok", Token: *tokenString}
 		resJson, err := json.Marshal(res)
 		if err != nil {
 			res := Response{err.Error()}
