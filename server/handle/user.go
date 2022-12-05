@@ -201,14 +201,14 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	switch r.Method {
 	case http.MethodPatch:
-		var up *UserPatch
-		if err := json.NewDecoder(r.Body).Decode(up); err != nil {
+		var up UserPatch
+		if err := json.NewDecoder(r.Body).Decode(&up); err != nil {
 			res := &Response{"Need name or email field"}
 			res.Error(&w)
 			return
 		}
 
-		if err := userPatchValid(up); err != nil {
+		if err := userPatchValid(&up); err != nil {
 			res := &Response{Status: err.Error()}
 			res.Error(&w)
 			return
