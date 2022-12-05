@@ -14,7 +14,7 @@ import (
 func MiddlewareAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
-		if strings.HasPrefix(authHeader, "Brearer ") {
+		if !strings.HasPrefix(authHeader, "Bearer ") {
 			res := handle.Response{Status: "ログインしてください。"}
 			res.Error(&w)
 			return
