@@ -4,6 +4,8 @@ import (
 	"kokokai/server/auth"
 	"kokokai/server/handle"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -11,14 +13,23 @@ import (
 func MiddlewareAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
-		a := auth.NewAuth()
-		if err := a.CheckAuth(authHeader); err != nil {
+		if strings.HasPrefix(authHeader, "Brearer ") {
+			res := handle.Response{Status: "ログインしてください。"}
+			res.Error(&w)
+			return
+		}
+		secret := os.Getenv("SECRET")
+		j := auth.NewJwtToken(secret)
+		mc, err := j.ParseToken(authHeader[7:])
+		if err != nil {
 			var res handle.Response
 			switch err.Error() {
-			case "Unauthorized":
-				res = handle.Response{Status: "ログインしてください。"}
-			case "invalid_request":
+			case "unexpected signing method":
+				res = handle.Response{Status: "不正アクセス"}
+			case "invalid":
 				res = handle.Response{Status: "認証に失敗しました。ログインし直してください。"}
+			default:
+				res = handle.Response{Status: "予期せぬエラーが発生しました。"}
 			}
 			res.Error(&w)
 			return
@@ -27,7 +38,7 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 		vars := mux.Vars(r)
 		if vars["userId"] != "" {
 			// ログインユーザとリクエスト対象のユーザが一致しない。
-			if vars["userId"] != a.UserId {
+			if vars["userId"] != mc.Id {
 				res := handle.Response{Status: "不正な操作です。ログインし直してください。"}
 				res.Error(&w)
 				return
