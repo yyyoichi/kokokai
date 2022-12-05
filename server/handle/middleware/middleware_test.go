@@ -40,6 +40,7 @@ func NewAuthTest(urlUserId string) *authTest {
 }
 
 func useRouter() *mux.Router {
+	loadEnv()
 	r := mux.NewRouter()
 	r.Use(MiddlewareAuth)
 	h := func(w http.ResponseWriter, r *http.Request) {
@@ -57,9 +58,10 @@ func useRouter() *mux.Router {
 	http.Handle("/", r)
 	return r
 }
+
+var router *mux.Router = useRouter()
+
 func TestAuthMiddleware(t *testing.T) {
-	loadEnv()
-	router := useRouter()
 	u := user.User{Id: "yyyoichi"}
 	s := os.Getenv("SECRET")
 	auth := auth.NewJwtToken(s)
@@ -82,7 +84,6 @@ func TestAuthMiddleware(t *testing.T) {
 }
 
 func TestMiddlewareAuth(t *testing.T) {
-	loadEnv()
 	id := "yyyoichi"
 	s := os.Getenv("SECRET")
 	test := []struct {
@@ -98,7 +99,6 @@ func TestMiddlewareAuth(t *testing.T) {
 		{id, id, "hoge", true, "認証に失敗しました。ログインし直してください。"}, //不正jwt.署名違い
 		{"other", id, s, true, "不正な操作です。ログインし直してください。"},   //別User操作
 	}
-	router := useRouter()
 	for _, tt := range test {
 		next := NewAuthTest(tt.pathId)
 		if tt.hasHead {
