@@ -11,12 +11,12 @@ func TestJWTToken(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	id, err := j.ParseToken(*tokenString)
+	mc, err := j.ParseToken(*tokenString)
 	if err != nil {
 		t.Error(err)
 	}
-	if *id != "xxxyyyzzz" {
-		t.Errorf("expected: 'xxxyyyzzz', got=%s", *id)
+	if mc.Id != "xxxyyyzzz" {
+		t.Errorf("expected: 'xxxyyyzzz', got=%s", mc.Id)
 	}
 }
 
