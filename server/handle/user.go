@@ -180,40 +180,36 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 type UserPatch struct {
-	Name  *string `validate:"max=20"`
-	Email *string `validate:"email,max=50"`
+	Name  string `validate:"omitempty,max=20"`
+	Email string `validate:"omitempty,email,max=50"`
+}
+
+func (up *UserPatch) getPatchColumns(u *user.User) []user.ColumnName {
+	c := make([]user.ColumnName, 0)
+	if up.Name != "" {
+		u.Name = up.Name
+		c = append(c, user.ColumnName("name"))
+	}
+	if up.Email != "" {
+		u.Email = up.Email
+		c = append(c, user.ColumnName("email"))
+	}
+	return c
 }
 
 func UserFunc(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	switch r.Method {
 	case http.MethodPatch:
-		var up UserPatch
-		if err := json.NewDecoder(r.Body).Decode(&up); err != nil {
-			res := &Response{"need name and email field"}
+		var up *UserPatch
+		if err := json.NewDecoder(r.Body).Decode(up); err != nil {
+			res := &Response{"Need name or email field"}
 			res.Error(&w)
 			return
 		}
 
-		validate := validator.New()
-		if err := validate.Struct(up); err != nil {
-			var out bytes.Buffer
-			var ve validator.ValidationErrors
-			if errors.As(err, &ve) {
-				for _, fe := range ve {
-					switch fe.Field() {
-					case "name":
-						out.WriteString("名前は20字以内で入力してください。")
-					case "email":
-						if fe.Tag() == "email" {
-							out.WriteString("有効なEmailを入力してください。")
-						} else if fe.Tag() == "max" {
-							out.WriteString("Emailは50字以内で入力してください。")
-						}
-					}
-				}
-			}
-			res := &Response{out.String()}
+		if err := userPatchValid(up); err != nil {
+			res := &Response{Status: err.Error()}
 			res.Error(&w)
 			return
 		}
@@ -221,16 +217,8 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 		// ユーザ情報アップデート
 		vars := mux.Vars(r)
 		userId := vars["userId"]
-		u := user.User{Id: userId}
-		updateColumn := make([]user.ColumnName, 0)
-		if up.Name != nil {
-			u.Name = *up.Name
-			updateColumn = append(updateColumn, user.ColumnName("name"))
-		}
-		if up.Email != nil {
-			u.Email = *up.Email
-			updateColumn = append(updateColumn, user.ColumnName("email"))
-		}
+		u := &user.User{Id: userId}
+		updateColumn := up.getPatchColumns(u)
 		if err := u.Update(updateColumn); err != nil {
 			res := Response{err.Error()}
 			res.Error(&w)
