@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"kokokai/server/auth"
 	"kokokai/server/db/user"
+	ctx "kokokai/server/handle/context"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gorilla/mux"
@@ -172,52 +175,60 @@ func testSignUpError(bodyBuf, expectedStatus string, t *testing.T) {
 }
 
 var userPatchTestUnit = []struct {
-	buf            string
-	expectedStatus string
-	expectedName   string
-	expectedEmail  string
+	buf               string
+	expectedStatus    string
+	expectedName      string
+	expectedEmail     string
+	expectTokenUpdate bool
 }{
 	{ //正常系
 		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "yyyoichi", "yyyoichi@example.com"),
 		"ok",
 		"yyyoichi",
 		"yyyoichi@example.com",
+		true,
 	},
 	{ // validation
 		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "abcdefghijabcdefghijdd", "yyyoichi@example.com"),
 		"名前は20字以内で入力してください。",
 		"yyyoichi",
 		"yyyoichi@example.com",
+		false,
 	},
 	{ // validation
 		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "yyyoichi", "yyyoichiexample.com"),
 		"有効なEmailを入力してください。",
 		"yyyoichi",
 		"yyyoichi@example.com",
+		false,
 	},
 	{ // validation
 		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "yyyoichi", "012345678901234567890123456789012345678900123456789@example.com"),
 		"Emailは50字以内で入力してください。",
 		"yyyoichi",
 		"yyyoichi@example.com",
+		false,
 	},
 	{ // 正常系一部
 		fmt.Sprintf(`{"name":"%s"}`, "hogehoge"),
 		"ok",
 		"hogehoge",
 		"yyyoichi@example.com",
+		true,
 	},
 	{ // 正常系一部
 		fmt.Sprintf(`{"email":"%s"}`, "hogehoge@example.com"),
 		"ok",
 		"hogehoge",
 		"hogehoge@example.com",
+		false,
 	},
 	{ // 正常系空欄
 		fmt.Sprintf(`{"name":"%s", "email":"%s"}`, "", ""),
 		"ok",
 		"hogehoge",
 		"hogehoge@example.com",
+		false,
 	},
 }
 
@@ -231,16 +242,23 @@ func TestUserPath(t *testing.T) {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/users/{userId}", UserFunc)
-
+	s := os.Getenv("SECRET")
+	jt := auth.NewJwtToken(s)
+	token, _ := jt.Generate(u.Id, "")
+	beforeClaims, _ := jt.ParseToken(*token)
 	for i, tt := range userPatchTestUnit {
 		reqBody := bytes.NewBufferString(tt.buf)
 		req := httptest.NewRequest(http.MethodPatch, `/users/`+u.Id, reqBody)
+
+		// context にアップデート前のユーザ情報を仕込む
+		uctx := ctx.NewUserContext(req.Context(), beforeClaims)
+
 		got := httptest.NewRecorder()
-		r.ServeHTTP(got, req)
+		r.ServeHTTP(got, req.WithContext(uctx))
 		if err := u.GetById(); err != nil {
 			t.Errorf("%d: %s", i, err)
 		}
-		var res Response
+		var res LoginResponse
 		if err := json.NewDecoder(got.Body).Decode(&res); err != nil {
 			t.Error(err)
 		}
@@ -252,6 +270,15 @@ func TestUserPath(t *testing.T) {
 		}
 		if u.Email != tt.expectedEmail {
 			t.Errorf("%d: excepted email %s but got=%s", i, tt.expectedEmail, u.Email)
+		}
+		if tt.expectTokenUpdate {
+			mc, err := jt.ParseToken(res.Token)
+			if err != nil {
+				t.Error(err)
+			}
+			if mc.Name != tt.expectedName {
+				t.Errorf("%d: expected name in token %s but got=%s", i, tt.expectedName, mc.Name)
+			}
 		}
 	}
 }
