@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"kokokai/server/auth"
 	"kokokai/server/db/user"
 	"kokokai/server/handle"
+	ctx "kokokai/server/handle/context"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -44,6 +46,10 @@ func useRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.Use(MiddlewareAuth)
 	h := func(w http.ResponseWriter, r *http.Request) {
+		mc, ok := ctx.FromUserContext(r.Context())
+		if ok {
+			fmt.Println(mc.Id + "," + mc.Name)
+		}
 		res := handle.Response{Status: "ok"}
 		resJson, err := json.Marshal(res)
 		if err != nil {
