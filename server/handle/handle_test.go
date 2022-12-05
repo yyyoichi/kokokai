@@ -169,3 +169,88 @@ func testSignUpError(bodyBuf, expectedStatus string, t *testing.T) {
 		t.Errorf("response excepted %s, but got=%s", expectedStatus, lr.Status)
 	}
 }
+
+var userPatchTestUnit = []struct {
+	buf            string
+	expectedStatus string
+	expectedName   string
+	expectedEmail  string
+}{
+	{ //正常系
+		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "yyyoichi", "yyyoichi@example.com"),
+		"ok",
+		"yyyoichi",
+		"yyyoichi@example.com",
+	},
+	{ // validation
+		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "abcdefghijabcdefghijdd", "yyyoichi@example.com"),
+		"名前は20字以内で入力してください。",
+		"yyyoichi",
+		"yyyoichi@example.com",
+	},
+	{ // validation
+		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "yyyoichi", "yyyoichiexample.com"),
+		"有効なEmailを入力してください。",
+		"yyyoichi",
+		"yyyoichi@example.com",
+	},
+	{ // validation
+		fmt.Sprintf(`{"name":"%s","email":"%s"}`, "yyyoichi", "012345678901234567890123456789012345678900123456789@example.com"),
+		"Emailは50字以内で入力してください。",
+		"yyyoichi",
+		"yyyoichi@example.com",
+	},
+	{ // 正常系一部
+		fmt.Sprintf(`{"name":"%s"}`, "hogehoge"),
+		"ok",
+		"hogehoge",
+		"yyyoichi@example.com",
+	},
+	{ // 正常系一部
+		fmt.Sprintf(`{"email":"%s"}`, "hogehoge@example.com"),
+		"ok",
+		"hogehoge",
+		"hogehoge@example.com",
+	},
+	{ // 正常系空欄
+		fmt.Sprintf(`{"name":"%s", "email":"%s"}`, "", ""),
+		"ok",
+		"hogehoge",
+		"hogehoge@example.com",
+	},
+}
+
+func TestUserPath(t *testing.T) {
+	loadEnv()
+	u := &user.User{Id: "tmpuser", Pass: "pa55w0rd", Name: "", Email: "example@example.com"}
+	if err := u.Create(); err != nil {
+		t.Error(err)
+	}
+	defer u.Delete()
+
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{userId}", UserFunc)
+
+	for i, tt := range userPatchTestUnit {
+		reqBody := bytes.NewBufferString(tt.buf)
+		req := httptest.NewRequest(http.MethodPatch, `/users/`+u.Id, reqBody)
+		got := httptest.NewRecorder()
+		r.ServeHTTP(got, req)
+		if err := u.GetById(); err != nil {
+			t.Errorf("%d: %s", i, err)
+		}
+		var res Response
+		if err := json.NewDecoder(got.Body).Decode(&res); err != nil {
+			t.Error(err)
+		}
+		if res.Status != tt.expectedStatus {
+			t.Errorf("%d: excepted status %s but got=%s", i, tt.expectedStatus, res.Status)
+		}
+		if u.Name != tt.expectedName {
+			t.Errorf("%d: excepted name %s but got=%s", i, tt.expectedName, u.Name)
+		}
+		if u.Email != tt.expectedEmail {
+			t.Errorf("%d: excepted email %s but got=%s", i, tt.expectedEmail, u.Email)
+		}
+	}
+}
