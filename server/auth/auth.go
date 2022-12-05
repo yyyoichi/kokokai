@@ -20,10 +20,10 @@ func (at *Auth) CheckAuth(authorizationHeader string) error {
 	}
 	secret := os.Getenv("SECRET")
 	j := NewJwtToken(secret)
-	userId, err := j.ParseToken(authorizationHeader[7:])
+	mc, err := j.ParseToken(authorizationHeader[7:])
 	if err != nil {
 		return errors.New("invalid_request")
 	}
-	at.UserId = *userId
+	at.UserId = mc.Id
 	return nil
 }
