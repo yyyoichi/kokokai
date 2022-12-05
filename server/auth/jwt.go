@@ -39,11 +39,11 @@ func (jt *JwtToken) ParseToken(tokenString string) (*MyClaims, error) {
 		}
 		return []byte(jt.secret), nil
 	})
-	if err != nil {
-		return nil, err
+	if err != nil || !token.Valid {
+		return nil, errors.New("invalid")
 	}
 
-	if mc, ok := token.Claims.(*MyClaims); ok && token.Valid {
+	if mc, ok := token.Claims.(*MyClaims); ok {
 		return mc, nil
 	} else {
 		return nil, errors.New("invalid")
