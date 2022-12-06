@@ -4,3 +4,4 @@
 app.yaml
 dev.yaml
 db/config/
+.env
