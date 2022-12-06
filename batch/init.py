@@ -6,7 +6,7 @@ def delete():
     print("delete rows")
     conn = get_connection()
     cursor = conn.cursor()
-    with open("delete_row.sql", "r", encoding="utf-8") as f:
+    with open("sql/delete_row.sql", "r", encoding="utf-8") as f:
         sql = f.read()
         cursor.execute(sql)
         conn.commit()
@@ -16,11 +16,22 @@ def delete():
 def init():
     conn = get_connection()
     cursor = conn.cursor()
-    with open("init.sql", "r", encoding="utf-8") as f:
+    with open("sql/init.sql", "r", encoding="utf-8") as f:
         sql = f.read()
         cursor.execute(sql)
         conn.commit()
     conn.close()
+
+
+def user_init():
+    conn = get_connection()
+    cursor = conn.cursor()
+    with open("sql/user.sql", "r", encoding="utf-8") as f:
+        sql = f.read()
+        cursor.execute(sql)
+        conn.commit()
+    conn.close()
+
 
 def test():
     conn = get_connection()
@@ -39,3 +50,5 @@ if __name__ == "__main__":
         delete()
     elif arg == "test":
         test()
+    elif arg == "user":
+        user_init()

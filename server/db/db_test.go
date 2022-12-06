@@ -13,7 +13,7 @@ import (
 
 func testLoadEnv() {
 	currentDir, _ := os.Getwd()
-	envPath := strings.ReplaceAll(filepath.Join(currentDir, "config/.env"), "\\", "/")
+	envPath := strings.ReplaceAll(filepath.Join(currentDir, "../.env"), "\\", "/")
 	err := godotenv.Load(envPath)
 	if err != nil {
 		fmt.Println("Error loading .env file")
@@ -148,7 +148,7 @@ func testingString(t *testing.T, v interface{}) {
 	if !ok {
 		t.Errorf("exp not sql.NullString. got=%T", v)
 	}
-	s := n2s(nv)
+	s := N2s(nv)
 	t.Log(s)
 }
 func testingInteger(t *testing.T, v interface{}) {
@@ -156,7 +156,7 @@ func testingInteger(t *testing.T, v interface{}) {
 	if !ok {
 		t.Errorf("exp not sql.NullInt64. got=%T", v)
 	}
-	s := n2i(nv)
+	s := N2i(nv)
 	t.Log(s)
 }
 func testingTime(t *testing.T, v interface{}) {
@@ -164,6 +164,6 @@ func testingTime(t *testing.T, v interface{}) {
 	if !ok {
 		t.Errorf("exp not sql.NullTime. got=%T", v)
 	}
-	s := n2t(nv)
+	s := N2t(nv)
 	t.Log(s)
 }
