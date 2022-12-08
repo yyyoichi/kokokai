@@ -3,7 +3,6 @@ package handle
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"kokokai/server/auth"
 	"kokokai/server/db/user"
@@ -13,7 +12,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -66,21 +64,9 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		validate := validator.New()
-		if err := validate.Struct(l); err != nil {
-			var out bytes.Buffer
-			var ve validator.ValidationErrors
-			if errors.As(err, &ve) {
-				for _, fe := range ve {
-					switch fe.Field() {
-					case "Id":
-						out.WriteString("id を入力してください。")
-					case "Pass":
-						out.WriteString("パスワードを入力してください。")
-					}
-				}
-			}
-			res := &Response{out.String()}
+		// バリデーションチェック
+		if err := loginValid(&l); err != nil {
+			res := &Response{Status: err.Error()}
 			res.Error(&w)
 			return
 		}

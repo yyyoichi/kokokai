@@ -7,6 +7,27 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+func loginValid(l *Login) error {
+	validate := validator.New()
+	if err := validate.Struct(l); err != nil {
+		var out bytes.Buffer
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			for _, fe := range ve {
+				switch fe.Field() {
+				case "Id":
+					out.WriteString("id を入力してください。")
+				case "Pass":
+					out.WriteString("パスワードを入力してください。")
+				}
+			}
+		}
+		return errors.New(out.String())
+	} else {
+		return nil
+	}
+}
+
 func signupValid(su *SignUp) error {
 	validate := validator.New()
 	validate.RegisterValidation("alphanumary", customAlphanumary)
