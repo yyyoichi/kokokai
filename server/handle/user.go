@@ -8,6 +8,8 @@ import (
 	"kokokai/server/auth"
 	"kokokai/server/db/user"
 	ctx "kokokai/server/handle/context"
+	cke "kokokai/server/handle/cookie"
+	sess "kokokai/server/handle/session"
 	"net/http"
 	"os"
 
@@ -25,7 +27,7 @@ type LoginResponse struct {
 	Token  string `json:"token"`
 }
 
-func (lr *LoginResponse) resWithJWT(w http.ResponseWriter, user *user.User) {
+func (lr *LoginResponse) resWithJWT(w http.ResponseWriter, r *http.Request, user *user.User) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	// jwt作成
 	secret := os.Getenv("SECRET")
@@ -36,7 +38,14 @@ func (lr *LoginResponse) resWithJWT(w http.ResponseWriter, user *user.User) {
 		res.Error(&w)
 		return
 	}
-	lr.Token = *tokenString
+	// jwtをcookieに保存
+	c := cke.NewUserCookie(*tokenString)
+	http.SetCookie(w, c)
+	// csrfTokenをセッションに保存
+	s := sess.NewUserCSRFToken(r)
+	s.Save(r, w)
+	// body に返却
+	lr.Token = s.Values["csrftoken"].(string)
 	resJson, err := json.Marshal(lr)
 	if err != nil {
 		res := Response{err.Error()}
@@ -94,7 +103,7 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 		// DBから取得正常
 		// jwt作成
 		res := LoginResponse{Status: "ok"}
-		res.resWithJWT(w, user)
+		res.resWithJWT(w, r, user)
 	default:
 		res := Response{"permits only POST"}
 		res.Error(&w)
@@ -172,7 +181,7 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 		// DBに新しいユーザを作成完了
 		// jwt作成
 		res := LoginResponse{Status: "ok"}
-		res.resWithJWT(w, user)
+		res.resWithJWT(w, r, user)
 	default:
 		res := Response{"permits only POST"}
 		res.Error(&w)
