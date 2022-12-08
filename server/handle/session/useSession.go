@@ -17,9 +17,21 @@ var (
 )
 
 func NewUserCSRFToken(r *http.Request) *sessions.Session {
-	session, _ := store.Get(r, "user")
-	session.Values["csrftoken"] = newId()
-	return session
+	s, _ := store.Get(r, "user")
+	s.Values["csrftoken"] = newId()
+	ev := os.Getenv("ENV")
+	switch ev {
+	case "STG":
+		s.Options.HttpOnly = true
+		s.Options.Secure = true
+		s.Options.SameSite = http.SameSiteNoneMode
+	case "PRO":
+		s.Options.HttpOnly = true
+		s.Options.Secure = true
+		s.Options.SameSite = http.SameSiteNoneMode
+		s.Options.Domain = "https://collokai.yyyoichi.com"
+	}
+	return s
 }
 
 func FromUserCSRFToken(r *http.Request) (*string, bool) {
