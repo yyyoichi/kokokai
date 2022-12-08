@@ -9,21 +9,23 @@ import (
 
 func NewUserCookie(jwtToken string) *http.Cookie {
 	ev := os.Getenv("ENV")
-	if ev == "DEV" {
-		return &http.Cookie{
-			Name:    "token",
-			Value:   jwtToken,
-			Expires: time.Now().AddDate(0, 0, 7),
-		}
+	c := &http.Cookie{
+		Name:    "token",
+		Value:   jwtToken,
+		Expires: time.Now().AddDate(0, 0, 7),
 	}
-	return &http.Cookie{
-		Name:     "token",
-		Value:    jwtToken,
-		Expires:  time.Now().AddDate(0, 0, 7),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+	switch ev {
+	case "STG":
+		c.HttpOnly = true
+		c.Secure = true
+		c.SameSite = http.SameSiteNoneMode
+	case "PRO":
+		c.HttpOnly = true
+		c.Secure = true
+		c.SameSite = http.SameSiteNoneMode
+		c.Domain = "https://collokai.yyyoichi.com"
 	}
+	return c
 }
 
 func FromUserCookie(r *http.Request) (*http.Cookie, error) {
