@@ -46,29 +46,31 @@ func TestLogin(t *testing.T) {
 	}
 }
 
+var loginTestUnit = []struct {
+	buf            string
+	expectedStatus string
+}{
+	{
+		fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "", "demopass"),
+		"id を入力してください。",
+	},
+	{
+		fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "demoid", ""),
+		"パスワードを入力してください。",
+	},
+	{
+		fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "", ""),
+		"id を入力してください。パスワードを入力してください。",
+	},
+	{
+		fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "zzzyyyxxx", "pass"),
+		"idが見つかりません。",
+	},
+}
+
 func TestLoginEmpty(t *testing.T) {
 	loadEnv()
-	test := []struct {
-		buf            string
-		expectedStatus string
-	}{
-		{
-			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "", "demopass"),
-			"id を入力してください。",
-		},
-		{
-			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "demoid", ""),
-			"パスワードを入力してください。",
-		},
-		{
-			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "", ""),
-			"id を入力してください。パスワードを入力してください。",
-		},
-		{
-			fmt.Sprintf(`{"id":"%s","pass":"%s"}`, "zzzyyyxxx", "pass"),
-			"idが見つかりません。",
-		},
-	}
+	test := loginTestUnit
 	for _, tt := range test {
 		testLoginError(tt.buf, tt.expectedStatus, t)
 	}
@@ -108,11 +110,10 @@ func TestSignUp(t *testing.T) {
 	testSignUpError(bodyBuf, "ok", t)
 }
 
-func TestSignUpError(t *testing.T) {
-	loadEnv()
-	normId := "o123456789o123456789"
-	normPass := "pa55w0rd"
-	test := []struct {
+var (
+	normId        = "o123456789o123456789"
+	normPass      = "pa55w0rd"
+	sinupTestUnit = []struct {
 		buf            string
 		expectedStatus string
 	}{
@@ -153,6 +154,11 @@ func TestSignUpError(t *testing.T) {
 			"確認用のパスワードを入力してください。",
 		},
 	}
+)
+
+func TestSignUpError(t *testing.T) {
+	loadEnv()
+	test := sinupTestUnit
 	for _, tt := range test {
 		testSignUpError(tt.buf, tt.expectedStatus, t)
 	}
