@@ -31,7 +31,7 @@ func NewUserCookie(jwtToken string) *http.Cookie {
 func FromUserCookie(r *http.Request) (*http.Cookie, error) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
-		return nil, errors.New("no user cookie" + err.Error())
+		return nil, errors.New("no user cookkie: " + err.Error())
 	}
 	return cookie, nil
 }
