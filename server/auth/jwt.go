@@ -23,7 +23,7 @@ type MyClaims struct {
 
 func (jt *JwtToken) Generate(id, name string) (*string, error) {
 	mc := &MyClaims{Id: id, Name: name}
-	mc.ExpiresAt = jwt.NewNumericDate(time.Now().AddDate(0, 0, 1))
+	mc.ExpiresAt = jwt.NewNumericDate(time.Now().AddDate(0, 0, 7))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mc)
 	tokenString, err := token.SignedString([]byte(jt.secret))
 	if err != nil {
