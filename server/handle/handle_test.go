@@ -7,6 +7,7 @@ import (
 	"kokokai/server/auth"
 	"kokokai/server/db/user"
 	ctx "kokokai/server/handle/context"
+	cke "kokokai/server/handle/cookie"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -258,8 +259,11 @@ func TestUserPath(t *testing.T) {
 
 		// context にアップデート前のユーザ情報を仕込む
 		uctx := ctx.NewUserContext(req.Context(), beforeClaims)
-
 		got := httptest.NewRecorder()
+		// Cookkieを仕込む
+		c := cke.NewUserCookie(*token)
+		req.AddCookie(c)
+
 		r.ServeHTTP(got, req.WithContext(uctx))
 		if err := u.GetById(); err != nil {
 			t.Errorf("%d: %s", i, err)
