@@ -254,6 +254,13 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			}
+			c, err := cke.UpdateUserCookie(r, *token)
+			if err != nil {
+				res := Response{Status: err.Error()}
+				res.Error(&w)
+				return
+			}
+			http.SetCookie(w, c)
 			tokenString = *token
 		}
 
