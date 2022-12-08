@@ -15,6 +15,9 @@ func NewUserCookie(jwtToken string) *http.Cookie {
 		Expires: time.Now().AddDate(0, 0, 7),
 	}
 	switch ev {
+	case "DEV":
+		c.HttpOnly = false
+		c.Secure = false
 	case "STG":
 		c.HttpOnly = true
 		c.Secure = true
