@@ -31,7 +31,7 @@ type AuthResponse struct {
 func (ar *AuthResponse) setJWTCookie(token string) {
 	c, err := cke.UpdateUserCookie(ar.r, token)
 	if err != nil {
-		NewErrorResponse(err.Error(), &ar.w)
+		NewErrorResponse(err.Error(), ar.w)
 		return
 	}
 	// jwtをcookieに保存
@@ -46,7 +46,7 @@ func (ar AuthResponse) writeOk() {
 	res := Response{Status: "ok"}
 	resJson, err := json.Marshal(res)
 	if err != nil {
-		NewErrorResponse(err.Error(), &ar.w)
+		NewErrorResponse(err.Error(), ar.w)
 		return
 	}
 	ar.w.Write(resJson)
