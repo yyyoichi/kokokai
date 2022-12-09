@@ -36,3 +36,17 @@ func TestInvalidToken(t *testing.T) {
 		t.Log(err)
 	}
 }
+
+func TestUpdatejwt(t *testing.T) {
+	id := "yyyoichi"
+	name := ""
+	s := "abc"
+	jt := NewJwtToken(s)
+	old, _ := jt.Generate(id, name)
+	mc, _ := jt.ParseToken(*old)
+	newtoken, _ := jt.UpdateName(mc, "yyyoichi")
+	newmc, _ := jt.ParseToken(*newtoken)
+	if newmc.Name != "yyyoichi" {
+		t.Error("not eq")
+	}
+}
