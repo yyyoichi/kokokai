@@ -190,37 +190,39 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 			res.Error(&w)
 			return
 		}
-
-		var tokenString string = ""
-		if up.Name != "" {
-			// トークン情報をアップデートする
-			mc, ok := ctx.FromUserContext(r.Context())
-			if !ok {
-				res := Response{Status: "予期せぬエラーが発生しました。"}
-				res.Error(&w)
-				return
-			}
-			secret := os.Getenv("SECRET")
-			jt := auth.NewJwtToken(secret)
-			token, err := jt.UpdateName(mc, u.Name)
-			if err != nil {
-				if !ok {
-					res := Response{Status: err.Error()}
-					res.Error(&w)
-					return
-				}
-			}
-			c, err := cke.UpdateUserCookie(r, *token)
-			if err != nil {
-				res := Response{Status: err.Error()}
-				res.Error(&w)
-				return
-			}
-			http.SetCookie(w, c)
-			tokenString = *token
+		// jwtのアップデートが不要
+		if up.Name == "" {
+			res := Response{"ok"}
+			res.Error(&w)
+			return
 		}
+		// トークン情報をアップデートする
+		// 前のJWTの中身を取り出す
+		mc, ok := ctx.FromUserContext(r.Context())
+		if !ok {
+			res := Response{Status: "予期せぬエラーが発生しました。"}
+			res.Error(&w)
+			return
+		}
+		secret := os.Getenv("SECRET")
+		jt := auth.NewJwtToken(secret)
+		// 前のトークン情報の名前部分を書き換える
+		token, err := jt.UpdateName(mc, u.Name)
+		if err != nil {
+			res := Response{Status: err.Error()}
+			res.Error(&w)
+			return
+		}
+		c, err := cke.UpdateUserCookie(r, *token)
+		if err != nil {
+			res := Response{Status: err.Error()}
+			res.Error(&w)
+			return
+		}
+		// jwtをcookieに保存
+		http.SetCookie(w, c)
 
-		res := LoginResponse{Status: "ok", Token: tokenString}
+		res := Response{Status: "ok"}
 		resJson, err := json.Marshal(res)
 		if err != nil {
 			res := Response{err.Error()}
