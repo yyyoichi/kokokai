@@ -27,10 +27,7 @@ func handler() {
 	r.HandleFunc("/daykyoki", handle.DayKyoki).Methods("GET")
 	r.HandleFunc("/login", handle.LoginFunc).Methods("POST")
 	r.HandleFunc("/signup", handle.SignUpFunc).Methods("POST")
-
-	s := r.PathPrefix("/sessions/").Subrouter()
-	s.Use(middleware.MiddlewareAuth)
-	s.HandleFunc("/", handle.UserSessionFunc).Methods("GET")
+	r.HandleFunc("/session", handle.UserSessionFunc).Methods("GET")
 
 	u := r.PathPrefix("/users/").Subrouter()
 	u.Use(middleware.MiddlewareAuth)
