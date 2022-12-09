@@ -268,7 +268,7 @@ func TestUserPath(t *testing.T) {
 		if err := u.GetById(); err != nil {
 			t.Errorf("%d: %s", i, err)
 		}
-		var res LoginResponse
+		var res Response
 		if err := json.NewDecoder(got.Body).Decode(&res); err != nil {
 			t.Error(err)
 		}
@@ -282,7 +282,8 @@ func TestUserPath(t *testing.T) {
 			t.Errorf("%d: excepted email %s but got=%s", i, tt.expectedEmail, u.Email)
 		}
 		if tt.expectTokenUpdate {
-			mc, err := jt.ParseToken(res.Token)
+			cs := got.Result().Cookies()
+			mc, err := jt.ParseToken(cs[0].Value)
 			if err != nil {
 				t.Error(err)
 			}
