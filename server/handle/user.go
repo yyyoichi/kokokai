@@ -183,7 +183,7 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		res := AuthResponse{r: r, w: w}
-		res.setJWTCookie(*token)
+		res.updateJWTCookie(*token)
 		res.setCSRFToken()
 		res.writeOk()
 	default:

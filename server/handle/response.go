@@ -37,7 +37,7 @@ type AuthResponse struct {
 	r *http.Request
 }
 
-func (ar *AuthResponse) setJWTCookie(token string) {
+func (ar *AuthResponse) updateJWTCookie(token string) {
 	c, err := cke.UpdateUserCookie(ar.r, token)
 	if err != nil {
 		NewErrorResponse(err.Error(), ar.w)
@@ -47,8 +47,15 @@ func (ar *AuthResponse) setJWTCookie(token string) {
 	http.SetCookie(ar.w, c)
 }
 
+func (ar *AuthResponse) setJWTCookie(token string) {
+	// jwtをcookieに保存
+	c := cke.NewUserCookie(token)
+	http.SetCookie(ar.w, c)
+}
+
 func (ar AuthResponse) setCSRFToken() {
-	ar.w.Header().Set("X-CSRF-Token", csrf.Token(ar.r))
+	t := csrf.Token(ar.r)
+	ar.w.Header().Set("X-CSRF-Token", t)
 }
 
 func (ar AuthResponse) writeOk() {
