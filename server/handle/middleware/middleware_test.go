@@ -7,6 +7,7 @@ import (
 	"kokokai/server/db/user"
 	"kokokai/server/handle"
 	ctx "kokokai/server/handle/context"
+	cke "kokokai/server/handle/cookie"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -28,10 +29,9 @@ type authTest struct {
 	got *httptest.ResponseRecorder
 }
 
-func (at *authTest) addAuthHeader(token string) {
-	at.req.Header = map[string][]string{
-		"Authorization": {"Bearer " + token},
-	}
+func (at *authTest) addAuthCookie(token string) {
+	c := cke.NewUserCookie(token)
+	at.req.AddCookie(c)
 }
 
 func NewAuthTest(urlUserId string) *authTest {
@@ -77,7 +77,7 @@ func TestAuthMiddleware(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	next.addAuthHeader(*token)
+	next.addAuthCookie(*token)
 
 	router.ServeHTTP(next.got, next.req)
 	var res handle.Response
@@ -113,7 +113,7 @@ func TestMiddlewareAuth(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			next.addAuthHeader(*token)
+			next.addAuthCookie(*token)
 		}
 
 		router.ServeHTTP(next.got, next.req)
