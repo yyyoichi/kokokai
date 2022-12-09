@@ -38,7 +38,7 @@ func handler() {
 }
 
 func getCSRFMiddleware() mux.MiddlewareFunc {
-	ev := os.Getenv("DEV")
+	ev := os.Getenv("ENV")
 	s := []byte(os.Getenv("CSRF_SECRET"))
 	var md mux.MiddlewareFunc
 	switch ev {
