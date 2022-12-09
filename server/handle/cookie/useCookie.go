@@ -22,11 +22,12 @@ func NewUserCookie(jwtToken string) *http.Cookie {
 		c.HttpOnly = true
 		c.Secure = true
 		c.SameSite = http.SameSiteNoneMode
+		c.Domain = "collokaistg.yyyoichi.com"
 	case "PRO":
 		c.HttpOnly = true
 		c.Secure = true
 		c.SameSite = http.SameSiteNoneMode
-		c.Domain = "https://collokai.yyyoichi.com"
+		c.Domain = "collokai.yyyoichi.com"
 	}
 	return c
 }
