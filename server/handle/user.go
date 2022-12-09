@@ -191,7 +191,3 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-func UserSessionFunc(w http.ResponseWriter, r *http.Request) {
-
-}
