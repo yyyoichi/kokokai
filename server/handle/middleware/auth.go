@@ -4,24 +4,24 @@ import (
 	"kokokai/server/auth"
 	"kokokai/server/handle"
 	ctx "kokokai/server/handle/context"
+	cke "kokokai/server/handle/cookie"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
 
 func MiddlewareAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if !strings.HasPrefix(authHeader, "Bearer ") {
+		tokenCookie, err := cke.FromUserCookie(r)
+		if err != nil || tokenCookie.Value == "" {
 			res := handle.Response{Status: "ログインしてください。"}
 			res.Error(&w)
 			return
 		}
 		secret := os.Getenv("SECRET")
 		j := auth.NewJwtToken(secret)
-		mc, err := j.ParseToken(authHeader[7:])
+		mc, err := j.ParseToken(tokenCookie.Value)
 		if err != nil {
 			var res handle.Response
 			switch err.Error() {
