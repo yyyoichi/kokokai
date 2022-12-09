@@ -3,6 +3,7 @@ package handle
 import (
 	"bytes"
 	"errors"
+	"regexp"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -26,6 +27,12 @@ func loginValid(l *Login) error {
 	} else {
 		return nil
 	}
+}
+
+func customAlphanumary(fl validator.FieldLevel) bool {
+	s := fl.Field().String()
+	rg := regexp.MustCompile(`([0-9].*[a-zA-Z]|[a-zA-Z].*[0-9])`)
+	return rg.MatchString(s)
 }
 
 func signupValid(su *SignUp) error {
