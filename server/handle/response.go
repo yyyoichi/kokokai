@@ -18,14 +18,23 @@ func NewErrorResponse(status string, w http.ResponseWriter) {
 	http.Error(w, string(json), http.StatusBadRequest)
 }
 
+func NewOkResponse(w http.ResponseWriter) {
+	res := Response{Status: "ok"}
+	resJson, err := json.Marshal(res)
+	if err != nil {
+		NewErrorResponse(err.Error(), w)
+		return
+	}
+	w.Write(resJson)
+}
+
 type Response struct {
 	Status string `json:"status"`
 }
 
 type AuthResponse struct {
-	Status string `json:"status"`
-	w      http.ResponseWriter
-	r      *http.Request
+	w http.ResponseWriter
+	r *http.Request
 }
 
 func (ar *AuthResponse) setJWTCookie(token string) {
@@ -43,11 +52,5 @@ func (ar AuthResponse) setCSRFToken() {
 }
 
 func (ar AuthResponse) writeOk() {
-	res := Response{Status: "ok"}
-	resJson, err := json.Marshal(res)
-	if err != nil {
-		NewErrorResponse(err.Error(), ar.w)
-		return
-	}
-	ar.w.Write(resJson)
+	NewOkResponse(ar.w)
 }

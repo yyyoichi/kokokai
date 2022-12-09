@@ -53,8 +53,7 @@ func useRouter() *mux.Router {
 		res := handle.Response{Status: "ok"}
 		resJson, err := json.Marshal(res)
 		if err != nil {
-			res := handle.Response{Status: err.Error()}
-			res.Error(&w)
+			handle.NewErrorResponse(err.Error(), w)
 			return
 		}
 		w.Write(resJson)

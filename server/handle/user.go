@@ -7,8 +7,6 @@ import (
 	"kokokai/server/auth"
 	"kokokai/server/db/user"
 	ctx "kokokai/server/handle/context"
-	cke "kokokai/server/handle/cookie"
-	sess "kokokai/server/handle/session"
 	"net/http"
 	"os"
 
@@ -20,54 +18,19 @@ type Login struct {
 	Pass string `validate:"required"`
 }
 
-type LoginResponse struct {
-	Status string `json:"status"`
-	Token  string `json:"token"`
-}
-
-func (lr *LoginResponse) resWithJWT(w http.ResponseWriter, r *http.Request, user *user.User) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	// jwt作成
-	secret := os.Getenv("SECRET")
-	j := auth.NewJwtToken(secret)
-	tokenString, err := j.Generate(user.Id, user.Name)
-	if err != nil {
-		res := Response{err.Error()}
-		res.Error(&w)
-		return
-	}
-	// jwtをcookieに保存
-	c := cke.NewUserCookie(*tokenString)
-	http.SetCookie(w, c)
-	// csrfTokenをセッションに保存
-	s := sess.NewUserCSRFToken(r)
-	s.Save(r, w)
-	// body に返却
-	lr.Token = s.Values["csrftoken"].(string)
-	resJson, err := json.Marshal(lr)
-	if err != nil {
-		res := Response{err.Error()}
-		res.Error(&w)
-		return
-	}
-	w.Write(resJson)
-}
-
 func LoginFunc(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	switch r.Method {
 	case http.MethodPost:
 		var l Login
 		if err := json.NewDecoder(r.Body).Decode(&l); err != nil {
-			res := &Response{"need id and pass field"}
-			res.Error(&w)
+			NewErrorResponse("need id and pass field", w)
 			return
 		}
 
 		// バリデーションチェック
 		if err := loginValid(&l); err != nil {
-			res := &Response{Status: err.Error()}
-			res.Error(&w)
+			NewErrorResponse(err.Error(), w)
 			return
 		}
 		// 入力値正常
@@ -82,17 +45,24 @@ func LoginFunc(w http.ResponseWriter, r *http.Request) {
 			default:
 				out.WriteString(err.Error())
 			}
-			res := Response{out.String()}
-			res.Error(&w)
+			NewErrorResponse(out.String(), w)
 			return
 		}
 		// DBから取得正常
 		// jwt作成
-		res := LoginResponse{Status: "ok"}
-		res.resWithJWT(w, r, user)
+		secret := os.Getenv("SECRET")
+		jt := auth.NewJwtToken(secret)
+		token, err := jt.Generate(user.Id, user.Name)
+		if err != nil {
+			NewErrorResponse("予期せぬエラーが発生しました: "+err.Error(), w)
+			return
+		}
+		res := AuthResponse{r: r, w: w}
+		res.setJWTCookie(*token)
+		res.setCSRFToken()
+		res.writeOk()
 	default:
-		res := Response{"permits only POST"}
-		res.Error(&w)
+		NewErrorResponse("permits only MethodPOST", w)
 		return
 	}
 }
@@ -109,14 +79,12 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		var su SignUp
 		if err := json.NewDecoder(r.Body).Decode(&su); err != nil {
-			res := &Response{"need id and pass field"}
-			res.Error(&w)
+			NewErrorResponse("need id, pass1 and pass2 field", w)
 			return
 		}
 
 		if err := signupValid(&su); err != nil {
-			res := &Response{Status: err.Error()}
-			res.Error(&w)
+			NewErrorResponse(err.Error(), w)
 			return
 		}
 		// バリデーションチェック完了。入力正常。
@@ -130,17 +98,24 @@ func SignUpFunc(w http.ResponseWriter, r *http.Request) {
 			default:
 				out.WriteString("予期せぬエラーが発生しました。")
 			}
-			res := Response{out.String()}
-			res.Error(&w)
+			NewErrorResponse(out.String(), w)
 			return
 		}
 		// DBに新しいユーザを作成完了
 		// jwt作成
-		res := LoginResponse{Status: "ok"}
-		res.resWithJWT(w, r, user)
+		secret := os.Getenv("SECRET")
+		jt := auth.NewJwtToken(secret)
+		token, err := jt.Generate(user.Id, user.Name)
+		if err != nil {
+			NewErrorResponse("予期せぬエラーが発生しました: "+err.Error(), w)
+			return
+		}
+		res := AuthResponse{r: r, w: w}
+		res.setJWTCookie(*token)
+		res.setCSRFToken()
+		res.writeOk()
 	default:
-		res := Response{"permits only POST"}
-		res.Error(&w)
+		NewErrorResponse("permits only MethodPOST", w)
 		return
 	}
 }
@@ -169,14 +144,12 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPatch:
 		var up UserPatch
 		if err := json.NewDecoder(r.Body).Decode(&up); err != nil {
-			res := &Response{"Need name or email field"}
-			res.Error(&w)
+			NewErrorResponse("Need name or email field", w)
 			return
 		}
 
 		if err := userPatchValid(&up); err != nil {
-			res := &Response{Status: err.Error()}
-			res.Error(&w)
+			NewErrorResponse(err.Error(), w)
 			return
 		}
 		// バリデーションチェック完了。入力正常。
@@ -186,22 +159,19 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 		u := &user.User{Id: userId}
 		updateColumn := up.getPatchColumns(u)
 		if err := u.Update(updateColumn); err != nil {
-			res := Response{err.Error()}
-			res.Error(&w)
+			NewErrorResponse(err.Error(), w)
 			return
 		}
 		// jwtのアップデートが不要
 		if up.Name == "" {
-			res := Response{"ok"}
-			res.Error(&w)
+			NewOkResponse(w)
 			return
 		}
 		// トークン情報をアップデートする
 		// 前のJWTの中身を取り出す
 		mc, ok := ctx.FromUserContext(r.Context())
 		if !ok {
-			res := Response{Status: "予期せぬエラーが発生しました。"}
-			res.Error(&w)
+			NewErrorResponse("予期せぬエラーが発生しました。", w)
 			return
 		}
 		secret := os.Getenv("SECRET")
@@ -209,30 +179,19 @@ func UserFunc(w http.ResponseWriter, r *http.Request) {
 		// 前のトークン情報の名前部分を書き換える
 		token, err := jt.UpdateName(mc, u.Name)
 		if err != nil {
-			res := Response{Status: err.Error()}
-			res.Error(&w)
+			NewErrorResponse(err.Error(), w)
 			return
 		}
-		c, err := cke.UpdateUserCookie(r, *token)
-		if err != nil {
-			res := Response{Status: err.Error()}
-			res.Error(&w)
-			return
-		}
-		// jwtをcookieに保存
-		http.SetCookie(w, c)
-
-		res := Response{Status: "ok"}
-		resJson, err := json.Marshal(res)
-		if err != nil {
-			res := Response{err.Error()}
-			res.Error(&w)
-			return
-		}
-		w.Write(resJson)
+		res := AuthResponse{r: r, w: w}
+		res.setJWTCookie(*token)
+		res.setCSRFToken()
+		res.writeOk()
 	default:
-		res := Response{"permits only MethodPatch"}
-		res.Error(&w)
+		NewErrorResponse("permits only MethodPatch", w)
 		return
 	}
+}
+
+func UserSessionFunc(w http.ResponseWriter, r *http.Request) {
+
 }
