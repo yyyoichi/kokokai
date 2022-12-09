@@ -293,10 +293,12 @@ func TestUserPath(t *testing.T) {
 }
 
 func TestSession(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/sessions", nil)
+	req := httptest.NewRequest(http.MethodGet, "/sessions", nil)
 	got := httptest.NewRecorder()
-	UserSessionFunc(got, req)
-
+	s := []byte(os.Getenv("CSRF_SECRET"))
+	csrfMiddleware := csrf.Protect(s, csrf.Secure(false))
+	fu := csrfMiddleware(http.HandlerFunc(UserSessionFunc))
+	fu.ServeHTTP(got, req)
 	var res SessionResponse
 	if err := json.NewDecoder(got.Body).Decode(&res); err != nil {
 		t.Error(err)
