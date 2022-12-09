@@ -14,6 +14,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
