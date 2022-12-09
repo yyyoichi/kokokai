@@ -291,3 +291,18 @@ func TestUserPath(t *testing.T) {
 		}
 	}
 }
+
+func TestSession(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, "/sessions", nil)
+	got := httptest.NewRecorder()
+	UserSessionFunc(got, req)
+
+	var res SessionResponse
+	if err := json.NewDecoder(got.Body).Decode(&res); err != nil {
+		t.Error(err)
+	}
+	if res.Status != "ok" {
+		t.Error("no ok")
+	}
+	t.Log(got.Result().Header.Get("X-CSRF-Token"))
+}
