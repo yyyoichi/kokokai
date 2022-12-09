@@ -34,11 +34,10 @@ func handler() {
 
 	u := r.PathPrefix("/users/").Subrouter()
 	u.Use(middleware.MiddlewareAuth)
-	csrfMiddleware := getCSRFMiddleware()
-	u.Use(csrfMiddleware)
 	u.HandleFunc("/{userId}", handle.UserFunc).Methods("PATCH")
 
-	http.Handle("/", r)
+	csrfMiddleware := getCSRFMiddleware()
+	http.Handle("/", csrfMiddleware(r))
 }
 
 func getCSRFMiddleware() mux.MiddlewareFunc {
@@ -47,7 +46,7 @@ func getCSRFMiddleware() mux.MiddlewareFunc {
 	var md mux.MiddlewareFunc
 	switch ev {
 	case "DEV":
-		md = csrf.Protect(s)
+		md = csrf.Protect(s, csrf.Secure(false))
 	case "STG":
 		md = csrf.Protect(s, csrf.TrustedOrigins([]string{"collokaistg.yyyoichi.com"}))
 	case "PRO":
