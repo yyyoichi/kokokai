@@ -8,14 +8,14 @@ import (
 	"github.com/gorilla/csrf"
 )
 
-func NewErrorResponse(status string, w *http.ResponseWriter) {
+func NewErrorResponse(status string, w http.ResponseWriter) {
 	res := &Response{Status: status}
 	json, err := json.Marshal(res)
 	if err != nil {
-		http.Error(*w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Error(*w, string(json), http.StatusBadRequest)
+	http.Error(w, string(json), http.StatusBadRequest)
 }
 
 type Response struct {
