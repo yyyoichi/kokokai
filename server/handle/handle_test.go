@@ -35,15 +35,13 @@ func TestLogin(t *testing.T) {
 	got := httptest.NewRecorder()
 	LoginFunc(got, req)
 
-	var lr LoginResponse
-	if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
+	var r Response
+	if err := json.NewDecoder(got.Body).Decode(&r); err != nil {
 		t.Error(err)
 	}
-	t.Log(lr.Status)
-	if lr.Status != "ok" {
-		t.Errorf("response excepted ok, but got=%s", lr.Status)
-	} else {
-		t.Logf("token=%s", lr.Token)
+	t.Log(r.Status)
+	if r.Status != "ok" {
+		t.Errorf("response excepted ok, but got=%s", r.Status)
 	}
 }
 
@@ -94,12 +92,12 @@ func testLoginError(bodyBuf, expectedStatus string, t *testing.T) {
 	got := httptest.NewRecorder()
 	LoginFunc(got, req)
 
-	var lr LoginResponse
-	if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
+	var r Response
+	if err := json.NewDecoder(got.Body).Decode(&r); err != nil {
 		t.Error(err)
 	}
-	if lr.Status != expectedStatus {
-		t.Errorf("expect err '%s' but got=%s", expectedStatus, lr.Status)
+	if r.Status != expectedStatus {
+		t.Errorf("expect err '%s' but got=%s", expectedStatus, r.Status)
 	}
 }
 
@@ -172,12 +170,12 @@ func testSignUpError(bodyBuf, expectedStatus string, t *testing.T) {
 	got := httptest.NewRecorder()
 	SignUpFunc(got, req)
 
-	var lr LoginResponse
-	if err := json.NewDecoder(got.Body).Decode(&lr); err != nil {
+	var r Response
+	if err := json.NewDecoder(got.Body).Decode(&r); err != nil {
 		t.Error(err)
 	}
-	if lr.Status != expectedStatus {
-		t.Errorf("response excepted %s, but got=%s", expectedStatus, lr.Status)
+	if r.Status != expectedStatus {
+		t.Errorf("response excepted %s, but got=%s", expectedStatus, r.Status)
 	}
 }
 

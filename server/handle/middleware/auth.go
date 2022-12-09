@@ -15,24 +15,24 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenCookie, err := cke.FromUserCookie(r)
 		if err != nil || tokenCookie.Value == "" {
-			res := handle.Response{Status: "ログインしてください。"}
-			res.Error(&w)
+			st := "ログインしてください。"
+			handle.NewErrorResponse(st, w)
 			return
 		}
 		secret := os.Getenv("SECRET")
 		j := auth.NewJwtToken(secret)
 		mc, err := j.ParseToken(tokenCookie.Value)
 		if err != nil {
-			var res handle.Response
+			var st string
 			switch err.Error() {
 			case "unexpected signing method":
-				res = handle.Response{Status: "不正アクセス"}
+				st = "不正アクセス"
 			case "invalid":
-				res = handle.Response{Status: "認証に失敗しました。ログインし直してください。"}
+				st = "認証に失敗しました。ログインし直してください。"
 			default:
-				res = handle.Response{Status: "予期せぬエラーが発生しました。"}
+				st = "予期せぬエラーが発生しました。"
 			}
-			res.Error(&w)
+			handle.NewErrorResponse(st, w)
 			return
 		}
 		// context にユーザ情報格納
@@ -42,8 +42,8 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 		if vars["userId"] != "" {
 			// ログインユーザとリクエスト対象のユーザが一致しない。
 			if vars["userId"] != mc.Id {
-				res := handle.Response{Status: "不正な操作です。ログインし直してください。"}
-				res.Error(&w)
+				st := "不正な操作です。ログインし直してください。"
+				handle.NewErrorResponse(st, w)
 				return
 			}
 		}
